@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Professional Profile - {{ professional.user.username }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 text-center">
+            <!-- Profile Image and Username -->
+            <div class="profile-picture mb-3">
+                <img id="profilePic" src="https://api.dicebear.com/9.x/lorelei/svg?seed={{ professional.user.username }}" alt="Profile Picture" class="rounded-circle shadow" width="150" />
+            </div>
+            <h2 class="mt-3 display-5">{{ professional.user.username }}</h2>
+            <span class="badge badge-success badge-lg">{{ 'Verified' if professional.verified else 'Not Verified' }}</span>
+
+            <!-- Professional Info Section -->
+            <div class="row text-start justify-content-center mt-5">
+                <div class="col-md-5">
+                    <div class="info-box rounded shadow-sm p-4 mb-4">
+                        <h6><i class="fas fa-envelope me-2"></i>Email:</h6>
+                        <p>{{ professional.user.email }}</p>
+                    </div>
+                    <div class="info-box rounded shadow-sm p-4 mb-4">
+                        <h6><i class="fas fa-phone me-2"></i>Phone:</h6>
+                        <p>{{ professional.user.phone_number }}</p>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="info-box rounded shadow-sm p-4 mb-4">
+                        <h6><i class="fas fa-briefcase me-2"></i>Service Type:</h6>
+                        <p>{{ professional.service_type }}</p>
+                    </div>
+                    <div class="info-box rounded shadow-sm p-4 mb-4">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Experience:</h6>
+                        <p>{{ professional.experience }} years</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toggle Block Professional -->
+            <div class="form-group d-flex justify-content-center align-items-center mb-4">
+                <label for="blockSwitch" class="form-label me-3">Block Professional</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-lg" type="checkbox" id="blockSwitch" data-userid="{{ professional.user.id }}" {% if professional.blocked %}checked{% endif %}>
+                </div>
+            </div>
+
+            <!-- Back to Dashboard Button -->
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-4 px-4 py-2">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

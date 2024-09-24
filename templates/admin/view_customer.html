@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Customer Profile - {{ customer.user.username }}
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Customer Profile</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="profile-card shadow-sm p-4 rounded">
+                <img src="{{ url_for('static', filename='uploads/profile_placeholder.png') }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <h5 class="card-title">{{ customer.user.username }}</h5>
+                <p class="card-text">
+                    <i class="fas fa-envelope"></i> <strong>Email:</strong> {{ customer.user.email }}<br>
+                    <i class="fas fa-phone"></i> <strong>Phone:</strong> {{ customer.user.phone_number }}<br>
+                    <i class="fas fa-home"></i> <strong>Address:</strong> {{ customer.address }}<br>
+                    <i class="fas fa-map-marker-alt"></i> <strong>Location Pin Code:</strong> {{ customer.location_pin_code }}<br>
+                    <i class="fas fa-star"></i> <strong>Preferred Services:</strong> {{ customer.preferred_services }}
+                </p>
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

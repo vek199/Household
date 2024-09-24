@@ -1,0 +1,64 @@
+{% extends 'layout.html'%}
+
+
+{% block title %}
+
+    
+    Professional Registration
+
+{% endblock %}
+
+{% block content %}
+<html>
+<body>
+    <div class="container mt-5">
+        <h2>Register as Professional</h2>
+        <form action="{{ url_for('register_professional') }}" method="POST"  enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="text" name="phone_number" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="service_type" class="form-label">Service Type</label>
+                <select name="service_type" class="form-control" required>
+                    <option value="" disabled selected>Select a service</option>
+                    {% for service in services %}
+                    <option value="{{ service.name }}">{{ service.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="experience" class="form-label">Experience (Years)</label>
+                <input type="number" name="experience" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="experience_proof" class="form-label">Upload Experience Proof (PDF/Image)</label>
+                <input type="file" name="experience_proof" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="description" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+</body>
+</html>
+
+{% endblock %}

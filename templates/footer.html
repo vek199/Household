@@ -1,0 +1,109 @@
+<footer class="bg-dark text-light py-4">
+    <div class="container">
+        <div class="row justify-content-between">
+            <!-- Company Column -->
+            <div class="col-6 col-md-2 mb-3">
+                <h6 class="text-uppercase fw-bold mb-4 text-white">Company</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-secondary text-decoration-none">About Us</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Terms & Conditions</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- For Customers Column -->
+            <div class="col-6 col-md-2 mb-3">
+                <h6 class="text-uppercase fw-bold mb-4 text-white">For Customers</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('register_customer') }}" class="text-secondary text-decoration-none">Create Account</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Reviews</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Near You</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Blog</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <!-- For Partners Column -->
+            <div class="col-6 col-md-2 mb-3">
+                <h6 class="text-uppercase fw-bold mb-4 text-white">For Partners</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('register_professional') }}" class="text-secondary text-decoration-none">Become a Professional</a></li>
+                </ul>
+            </div>
+
+            <!-- Social Links & App Buttons -->
+            <div class="col-12 col-md-4 text-center">
+                <h6 class="text-uppercase fw-bold mb-4 text-white">Follow Us</h6>
+                <div class="d-flex flex-wrap justify-content-center mb-3 follow-us-icons">
+                    <div class="social-icon-wrapper">
+                        <a href="#" class="text-secondary text-decoration-none m-2"><i class="fab fa-twitter fa-lg"></i></a>
+                    </div>
+                    <div class="social-icon-wrapper">
+                        <a href="#" class="text-secondary text-decoration-none m-2"><i class="fab fa-facebook fa-lg"></i></a>
+                    </div>
+                    <div class="social-icon-wrapper">
+                        <a href="#" class="text-secondary text-decoration-none m-2"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                    <div class="social-icon-wrapper">
+                        <a href="#" class="text-secondary text-decoration-none m-2"><i class="fab fa-linkedin fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="d-flex flex-column align-items-center app-buttons">
+                    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" class="store-button"></a>
+                    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Download_on_the_App_Store_RGB_blk.svg" alt="App Store" class="store-button mt-2"></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <small class="text-secondary">&copy; 2024 The Household Company. All Rights Reserved.</small>
+        </div>
+    </div>
+</footer>
+
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<style>
+    /* Center the Follow Us section */
+    .follow-us-icons {
+        width: 120px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Create a 2x2 grid */
+        gap: 20px; /* Add space between the icons */
+    }
+
+    /* Styling for each social icon */
+    .social-icon-wrapper {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    /* Hover effect for social icons */
+    .social-icon-wrapper a:hover {
+        background-color: #495057;
+        border-color: #495057;
+    }
+
+    /* Make the store buttons the same size */
+    .store-button {
+        width: 100px;
+        height: auto;
+    }
+
+    /* Ensure Play Store and App Store buttons are vertically aligned */
+    .app-buttons a {
+        display: block;
+    }
+
+    /* Add spacing between the app store buttons */
+    .app-buttons .mt-2 {
+        margin-top: 15px;
+    }
+</style>

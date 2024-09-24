@@ -1,0 +1,177 @@
+{% extends 'layout.html' %}
+
+{% block heading %}
+    
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Household Services</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+        }
+        /* Styling the service section */
+        .service-cards {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 50px 0;
+        }
+        .what-looking-for {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .what-looking-for h2 {
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .card {
+            margin-bottom: 15px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 200px;
+        }
+        .card .card-title {
+            display: flex;
+            align-items: center;
+            color: #333;
+        }
+        .card .card-title i {
+            margin-right: 8px;
+            font-size: 1.25rem;
+            color: #007bff;
+        }
+        .card img {
+            height: 80px;
+            width: 80px;
+            border-radius: 50%;
+        }
+        /* Icons fix */
+        .fa-broom, .fa-tools, .fa-bolt, .fa-seedling {
+            color: #007bff;
+        }
+        /* Right Side Image Section */
+        .images-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 15px;
+        }
+        .images-section img {
+            width: 100%;
+            border-radius: 15px;
+            height: auto;
+        }
+        .image-large {
+            grid-column: span 2;
+        }
+        .image-small {
+            height: 200px;
+        }
+    </style>
+    <!-- Icons (FontAwesome) -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <header class="container-fluid">
+        <div class="row py-3">
+            <div class="col-md-12 d-flex justify-content-between">
+                <h1></h1> <!-- Removed the heading -->
+            </div>
+        </div>
+    </header>
+
+    <div class="container service-cards">
+        <div class="row">
+            <!-- Left Side: Cards for Services -->
+            <div class="col-md-5">
+                <div class="what-looking-for">
+                    <h2>What are you looking for?</h2>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card d-flex align-items-center">
+                                <img src="https://picsum.photos/150/150" class="card-img-top" alt="Cleaning">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-broom"></i> Cleaning Service
+                                    </h5>
+                                    <p class="card-text">Professional cleaning for your home or office.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="card d-flex align-items-center">
+                                <img src="https://picsum.photos/150/150" class="card-img-top" alt="Plumbing">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-tools"></i> Plumbing Service
+                                    </h5>
+                                    <p class="card-text">Experienced plumbers available for repairs.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="card d-flex align-items-center">
+                                <img src="https://picsum.photos/150/150" class="card-img-top" alt="Electrical">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-bolt"></i> Electrical Service
+                                    </h5>
+                                    <p class="card-text">Licensed electricians for all your needs.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="card d-flex align-items-center">
+                                <img src="https://picsum.photos/150/150" class="card-img-top" alt="Gardening">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-seedling"></i> Gardening Service
+                                    </h5>
+                                    <p class="card-text">Professional gardening and landscaping services.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Images of Services (Puzzle Layout) -->
+            <div class="col-md-7 images-section" >
+                <div class="image-large">
+                    <img src="https://picsum.photos/700/300" alt="Cleaning Service">
+                </div>
+                <div class="image-small">
+                    <img src="https://picsum.photos/350/350" alt="Plumbing Service">
+                </div>
+                <div class="image-small">
+                    <img src="https://picsum.photos/350/350" alt="Electrical Service">
+                </div>
+                <div class="image-large">
+                    <img src="https://picsum.photos/700/300" alt="Gardening Service">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+{% endblock %}
