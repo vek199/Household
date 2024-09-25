@@ -5,195 +5,257 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="display-1">Admin Dashboard</h1>
+<h1 class="display-1 text-center mb-5">Admin Dashboard</h1>
 
-<!-- Services Table -->
-<h2>Services</h2>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Service Name</th>
-            <th>Base Price</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for service in services %}
-        <tr>
-            <td>{{ service.id }}</td>
-            <td>{{ service.name }}</td>
-            <td>${{ service.price }}</td>
-            <td>
-                <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
-                <a href="{{ url_for('delete_service', service_id=service.id) }}" class="btn btn-danger">
-                    <i class="fas fa-trash-alt"></i> Delete
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="dashboard-section">
+    <!-- Services Table -->
+    <div class="table-section">
+        <h2 class="table-heading">Services</h2>
+        <a href="{{ url_for('add_service') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-check"></i> Add Service
+        </a>
+        <a href="{{ url_for('add_service_category') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-check"></i> Add Service Category
+        </a>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service Name</th>
+                    <th>Base Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.name }}</td>
+                    <td>${{ service.price }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{{ url_for('delete_service', service_id=service.id) }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<!-- Professionals Table (Pending Approval) -->
-<h2>Professionals (Pending Approval)</h2>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Experience (Yrs)</th>
-            <th>Service Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for professional in non_verified_professionals %}
-        <tr>
-            <td>{{ professional.id }}</td>
-            <td>{{ professional.user.username }}</td>
-            <td>{{ professional.experience }}</td>
-            <td>{{ professional.service_type }}</td>
-            <td>
-                <a href="{{ url_for('approve_professional', professional_id=professional.user_id) }}" class="btn btn-success">
-                    <i class="fas fa-check"></i> Approve
-                </a>
-                <a href="{{ url_for('reject_professional', professional_id=professional.user_id) }}" class="btn btn-danger">
-                    <i class="fas fa-times"></i> Reject
-                </a>
-                <a href="{{ url_for('delete_professional', professional_id=professional.user_id) }}" class="btn btn-danger">
-                    <i class="fas fa-trash-alt"></i> Delete
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- Professionals Table (Pending Approval) -->
+    <div class="table-section">
+        <h2 class="table-heading">Professionals (Pending Approval)</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Experience (Yrs)</th>
+                    <th>Service Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in non_verified_professionals %}
+                <tr>
+                    <td>{{ professional.id }}</td>
+                    <td>{{ professional.user.username }}</td>
+                    <td>{{ professional.experience }}</td>
+                    <td>{{ professional.service_type }}</td>
+                    <td>
+                        <a href="{{ url_for('approve_professional', professional_id=professional.user_id) }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> Approve
+                        </a>
+                        <a href="{{ url_for('reject_professional', professional_id=professional.user_id) }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-times"></i> Reject
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<!-- Service Requests Table -->
-<h2>Service Requests</h2>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Assigned Professional</th>
-            <th>Requested Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for request in service_requests %}
-        <tr>
-            <td>{{ request.id }}</td>
-            <td>{{ request.professional.user.username if request.professional else 'Not Assigned' }}</td>
-            <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
-            <td>{{ request.service_status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<!-- Customer Profiles Table -->
-<h2>Customers</h2>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone Number</th>
-            <th>Address</th>
-            <th>Location Pin Code</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers %}
-        <tr>
-            <td>{{ customer.id }}</td>
-            <td>{{ customer.user.username }}</td>
-            <td>{{ customer.user.email }}</td>
-            <td>{{ customer.user.phone_number }}</td>
-            <td>{{ customer.address }}</td>
-            <td>{{ customer.location_pin_code }}</td>
-            <td>
-                <a href="{{ url_for('customer_profile', user_id=customer.user_id) }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-eye"></i> Details
-                </a>
-                <a href="{{ url_for('view_reviews', user_id=customer.user_id) }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-eye"></i> Reviews
-                </a>
-                <a href="{{ url_for('block', user_id=customer.user_id) }}" class="btn btn-danger btn-sm">
-                    <i class="fas fa-ban"></i> Block
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- Service Requests Table -->
+    <div class="table-section">
+        <h2 class="table-heading">Service Requests</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Assigned Professional</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.professional.user.username if request.professional else 'Not Assigned' }}</td>
+                    <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ request.service_status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<!-- Approved Professionals Profiles Table -->
-<h2>Professionals</h2>
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone Number</th>
-            <th>Service Type</th>
-            <th>Experience (Yrs)</th>
-            <th>Verified</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for professional in verified_professionals %}
-        <tr>
-            <td>{{ professional.id }}</td>
-            <td>{{ professional.user.username }}</td>
-            <td>{{ professional.user.email }}</td>
-            <td>{{ professional.user.phone_number }}</td>
-            <td>{{ professional.service_type }}</td>
-            <td>{{ professional.experience }}</td>
-            <td>{{ 'Yes' if professional.verified else 'No' }}</td>
-            <td>
-                <a href="{{ url_for('professional_profile', user_id=professional.user_id) }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-eye"></i> Details
-                </a>
-                <a href="{{ url_for('view_reviews', user_id=professional.user_id) }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-eye"></i> Reviews
-                </a>
-                <a href="{{ url_for('block', user_id=professional.user_id) }}" class="btn btn-danger btn-sm">
-                    <i class="fas fa-ban"></i> Block
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- Customers Table -->
+    <div class="table-section">
+        <h2 class="table-heading">Customers</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Address</th>
+                    <th>Location Pin Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.user.username }}</td>
+                    <td>{{ customer.user.email }}</td>
+                    <td>{{ customer.user.phone_number }}</td>
+                    <td>{{ customer.address }}</td>
+                    <td>{{ customer.location_pin_code }}</td>
+                    <td>
+                        <a href="{{ url_for('customer_profile', user_id=customer.user_id) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Details
+                        </a>
+                        <a href="{{ url_for('view_reviews', user_id=customer.user_id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> Reviews
+                        </a>
+                        <a href="{{ url_for('block', user_id=customer.user_id) }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-ban"></i> Block
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
+    <!-- Approved Professionals Table -->
+    <div class="table-section">
+        <h2 class="table-heading">Professionals</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Service Type</th>
+                    <th>Experience (Yrs)</th>
+                    <th>Verified</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in verified_professionals %}
+                <tr>
+                    <td>{{ professional.id }}</td>
+                    <td>{{ professional.user.username }}</td>
+                    <td>{{ professional.user.email }}</td>
+                    <td>{{ professional.user.phone_number }}</td>
+                    <td>{{ professional.service_type }}</td>
+                    <td>{{ professional.experience }}</td>
+                    <td>{{ 'Yes' if professional.verified else 'No' }}</td>
+                    <td>
+                        <a href="{{ url_for('professional_profile', user_id=professional.user_id) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Details
+                        </a>
+                        <a href="{{ url_for('view_reviews', user_id=professional.user_id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> Reviews
+                        </a>
+                        <a href="{{ url_for('block', user_id=professional.user_id) }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-ban"></i> Block
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}
 
-
 {% block style %}
-    
 <style>
-    .btn-sm {
-        padding: 0.25rem 0.5rem; /* Adjust button padding */
-        font-size: 0.875rem; /* Adjust font size */
+    /* Darker background for entire page */
+    body {
+        background-color: #e0e0e0;
     }
-    
+
+    /* Styling the container for all tables */
+    .dashboard-section {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    /* Modern card-like styling for tables */
+    .table-section {
+        background-color: #fff;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Stylish table heading */
+    .table-heading {
+        background: linear-gradient(135deg, #4c83ff, #1a60e5);
+        color: #fff;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    /* Table styling */
     .table {
-        table-layout: auto; /* Allow the table to size based on content */
-        width: 100%; /* Make the table full width */
+        border-collapse: collapse;
+        width: 100%;
     }
-    
-    td {
-        white-space: nowrap; /* Prevent wrapping of table cell content */
+
+    .table th {
+        background-color: #007bff;
+        color: #fff;
+        text-align: center;
     }
-    
+
+    .table td, .table th {
+        padding: 0.75rem;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    /* Button styling */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 5px;
+    }
+
+    /* Table-row hover effect */
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
 </style>
 {% endblock %}

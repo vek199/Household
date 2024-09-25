@@ -24,7 +24,6 @@ class User(db.Model):
     service_requests = db.relationship('ServiceRequest', backref='customer', foreign_keys='ServiceRequest.customer_id')
     reviews_written = db.relationship('Review', backref='reviewer', foreign_keys='Review.reviewer_id')
     reviews_received = db.relationship('Review', backref='reviewee', foreign_keys='Review.reviewee_id')
-    blocks = db.relationship('Block', backref='user', foreign_keys='Block.blocked_user_id')
 
     # Password hashing functionality
     def set_password(self, password):
@@ -40,8 +39,8 @@ class CustomerProfile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     address = db.Column(db.Text)
     location_pin_code = db.Column(db.String(10))
+    blocked = db.Column(db.Boolean, default=False)
     preferred_services = db.Column(db.Text)  # A list of services they are interested in
-
 
 # Professional table (Additional details for professionals)
 class Professional(db.Model):
@@ -52,12 +51,11 @@ class Professional(db.Model):
     experience = db.Column(db.Integer)  # Number of years of experience
     description = db.Column(db.Text)  # A brief bio or professional description
     verified = db.Column(db.Boolean, default=False)  # Verification status (admin approval)
-    accepted = db.Column(db.Boolean, default=False)
-    experience_proof = db.Column(db.String(255)) 
+    blocked = db.Column(db.Boolean, default=False)
+    experience_proof = db.Column(db.String(255))
 
-    # Relationship
+    # Relationships
     service_requests = db.relationship('ServiceRequest', backref='professional', foreign_keys='ServiceRequest.professional_id')
-
 
 # Service table (Stores all available services)
 class Service(db.Model):
@@ -68,22 +66,27 @@ class Service(db.Model):
     time_required = db.Column(db.Integer)  # in minutes or hours
     description = db.Column(db.Text)
 
-
 # Service Request table (Service requests made by customers)
 class ServiceRequest(db.Model):
     __tablename__ = 'service_request'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     customer_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Assuming customer is stored in 'user' table
-    professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'))
+    professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'))  # Professional assigned
     date_of_request = db.Column(db.DateTime, default=datetime.utcnow)
     date_of_completion = db.Column(db.DateTime)
-    service_status = db.Column(db.String(50))  # requested, assigned, closed
+    service_status = db.Column(db.String(50))  # 'requested', 'assigned', 'completed', 'closed', 'rejected'
     remarks = db.Column(db.Text)
+    
+    # New fields for professional tracking
+    contact_number = db.Column(db.String(15))  # Customer's contact number
+    location = db.Column(db.Text)  # Customer's location
+    location_pin_code = db.Column(db.String(10))  # Customer's pin code
 
     # Relationships
     service = db.relationship('Service', backref='service_requests')
-
+    customer = db.relationship('User', foreign_keys=[customer_id])
+    professional = db.relationship('Professional', foreign_keys=[professional_id])
 
 # Review table (Stores reviews for both customers and professionals)
 class Review(db.Model):
@@ -98,20 +101,14 @@ class Review(db.Model):
     # Relationship
     service_request = db.relationship('ServiceRequest', backref='reviews')
 
-
-# Block table (Stores information about blocked users)
+# Block table (To block users by admin)
 class Block(db.Model):
     __tablename__ = 'block'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # The admin who blocked the user
-    blocked_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # The user who is blocked (customer or professional)
-    reason = db.Column(db.Text)  # Reason for blocking
-    date_blocked = db.Column(db.DateTime, default=datetime.utcnow)
+    blocked_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # User being blocked
 
     # Relationships
-    admin = db.relationship('User', foreign_keys=[admin_id])
     blocked_user = db.relationship('User', foreign_keys=[blocked_user_id])
-
 
 with app.app_context():
     db.create_all()
@@ -119,6 +116,6 @@ with app.app_context():
     admin = User.query.filter_by(is_admin=True).first()
     if not admin:
         password_hash = generate_password_hash('admin')
-        admin = User(username='admin', password_hash=password_hash, email='admin@admin.com', is_admin=True, role='admin')  # Removed name argument
+        admin = User(username='admin', password_hash=password_hash, email='admin@admin.com', is_admin=True, role='admin')
         db.session.add(admin)
         db.session.commit()

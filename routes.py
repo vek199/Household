@@ -45,8 +45,8 @@ def admin_required(func):
     return inner
 
 @app.route('/')
-@app.route('/')
 @app.route('/index')
+@auth_required
 def index():
     if 'user_id' not in session:
         return render_template('index.html')  # Render the index page directly
@@ -142,7 +142,7 @@ def register_customer():
         db.session.add(customer_profile)
         db.session.commit()
 
-        flash('Registration successful! Please log in.')
+        flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('login'))
     
     return render_template('customer/register.html')
@@ -245,17 +245,36 @@ def admin():
     service_requests = ServiceRequest.query.all()
     non_verified_professionals = Professional.query.filter_by(verified=False).all()
     verified_professionals = Professional.query.filter_by(verified=True).all()
-    return render_template('admin/dashboard.html', professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
+    servicecategory = ServiceCategory.query.all()
+    return render_template('admin/dashboard.html', professionals=professionals,non_verified_professionals=non_verified_professionals,servicecategory=servicecategory,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
 
 
 @app.route('/dashboard/customer')
 def customer_dashboard():
-    return render_template('customer/dashboard.html')
+    professionals = Professional.query.all()
+    users = User.query.all()
+    customers = CustomerProfile.query.all()
+    services = Service.query.all()
+    service_requests = ServiceRequest.query.all()
+    non_verified_professionals = Professional.query.filter_by(verified=False).all()
+    verified_professionals = Professional.query.filter_by(verified=True).all()
+    servicecategory = ServiceCategory.query.all()
+
+    return render_template('customer/dashboard.html', professionals=professionals,non_verified_professionals=non_verified_professionals,servicecategory=servicecategory,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
+
 
 
 @app.route('/dashboard/professional')
 def professional_dashboard():
-    return 
+    professionals = Professional.query.all()
+    users = User.query.all()
+    customers = CustomerProfile.query.all()
+    services = Service.query.all()
+    service_requests = ServiceRequest.query.all()
+    non_verified_professionals = Professional.query.filter_by(verified=False).all()
+    verified_professionals = Professional.query.filter_by(verified=True).all()
+    servicecategory = ServiceCategory.query.all()
+    return render_template('professional/dashboard.html', professionals=professionals,non_verified_professionals=non_verified_professionals,servicecategory=servicecategory,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
 
 # Route for Professional Profile
 @app.route('/profile/professional/<int:user_id>')
@@ -295,6 +314,30 @@ def add_service_post():
 
     # Create a new service
     service = Service(name=name, price=price, time_required=time_required, description=description)
+    db.session.add(service)
+    db.session.commit()
+
+    flash('Service added successfully!', 'success')
+    return redirect(url_for('admin'))
+
+@app.route('/service/add_service_category')
+@auth_required  # Ensure only logged-in users can add a service
+def add_service_category():
+    return render_template('admin/category/add.html')
+
+@app.route('/service/add_service_category', methods=['POST'])
+@auth_required
+def add_service_category_post():
+    name = request.form.get('name')
+    
+
+    # Validate the input
+    if not name:
+        flash('Please fill in all fields.', 'warning')
+        return redirect(url_for('add_service'))
+
+    # Create a new service
+    service = ServiceCategory(name=name)
     db.session.add(service)
     db.session.commit()
 
@@ -350,6 +393,18 @@ def delete_professional(professional_id):
     db.session.commit()
     flash(f'Professional {professional.user.username} has been deleted.', 'success')
     return redirect(url_for('admin_dashboard'))  # Redirect to admin dashboard
+
+@app.route('/services/<int:service_id>')
+def list_services(service_id):
+    # Query the service from the database by ID
+    service = Service.query.get_or_404(service_id)
+    category = ServiceCategory.query.get_or_404(service_id)
+
+    
+    # Render the service detail page and pass the service object to the template
+    return render_template('customer/service.html', service=service, category=category)
+
+
 
 
 

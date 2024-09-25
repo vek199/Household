@@ -1,13 +1,67 @@
-<!-- View/Search the service by the name/location pin code -->
-
 {% extends 'layout.html' %}
 
 {% block heading %}
-    
+<title>Customer Dashboard</title>
 {% endblock %}
 
 {% block content %}
+<hr>
+<div class="categories-list">
+    <div class="services-scrollable">
+        {% for service in servicecategory %}
+        <div class="card" style="width: 18rem; display: inline-block; margin-right: 10px;">
+            <img src="https://picsum.photos/150/150" class="card-img-top" alt="{{ service.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ service.name }}</h5>
+                <p class="card-text">
+                    {{ service.description or "No description available" }}
+                </p>
+                <button onclick="location.href='{{ url_for('list_services', service_id=service.id) }}'" class="btn btn-outline-info">
+                    <i class="fas fa-info-circle"></i> See More
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
 
+{% block style %}
+<style>
+    .categories-list {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px 0;
+    }
 
+    .services-scrollable {
+        display: flex;  /* Align items in a row */
+        overflow-x: auto; /* Allow horizontal scrolling */
+        padding: 10px;
+        white-space: nowrap; /* Prevent wrapping */
+        scrollbar-width: thin; /* Style scrollbar (for Firefox) */
+    }
 
+    .services-scrollable::-webkit-scrollbar {
+        height: 8px; /* Height of the horizontal scrollbar */
+    }
+
+    .services-scrollable::-webkit-scrollbar-thumb {
+        background-color: #cccccc; /* Color of the scrollbar */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    .btn {
+        margin-top: 10px;
+    }
+</style>
 {% endblock %}
