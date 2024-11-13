@@ -14,7 +14,7 @@
                 <a class="nav-link" aria-current="page" href="{{url_for('search')}}">Search</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="">Summary</a>
+                <a class="nav-link" aria-current="page" href="{{url_for('summary')}}">Summary</a>
               </li>
               <li class="nav-item"></li>
               {% if session['role'] == 'professional' %}

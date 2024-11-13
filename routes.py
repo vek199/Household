@@ -89,6 +89,22 @@ def search():
     else:
         return redirect(url_for('customer_search'))
 
+@app.route('/summary')
+@auth_required
+def summary():
+    if 'user_id' not in session:
+        return render_template('index.html')  # Render the index page directly
+
+    print('Index opened')
+    print(session['user_id'])
+    print(session['role'])
+
+    if session['role'] == 'admin':
+        return redirect(url_for('admin_summary'))
+    elif session['role'] == 'professional':
+        return redirect(url_for('professional_summary'))
+    else:
+        return redirect(url_for('customer_summary'))
     
 
 @app.route('/login')
@@ -135,7 +151,6 @@ def blocked():
 
 
 @app.route('/logout')
-@auth_required
 def logout():
     session.pop('user_id')
     return redirect(url_for('login'))
@@ -257,6 +272,7 @@ def register_professional():
     return render_template('professional/register.html', services=services)
 
 @app.route('/admin/professional/<int:professional_id>')
+@admin_required
 def view_professional(professional_id):
     professional = Professional.query.get(professional_id)
     
@@ -264,6 +280,16 @@ def view_professional(professional_id):
         # Handle the case when the professional is not found
         return "Professional not found", 404
     return render_template('admin/view_professional.html', professional=professional)
+
+@app.route('/admin/customer/<int:customer_id>')
+@admin_required
+def view_customer(customer_id):
+    customer = CustomerProfile.query.get(customer_id)
+    
+    if customer is None:
+        # Handle the case when the professional is not found
+        return "customer not found", 404
+    return render_template('admin/view_customer.html', customer=customer)
 
 
 
@@ -279,9 +305,10 @@ def admin():
     non_verified_professionals = Professional.query.filter_by(verified=False).all()
     verified_professionals = Professional.query.filter_by(verified=True).all()
     reviews = Review.query.all()
+    blocked_users = [block.blocked_user_id for block in Block.query.all()]
     # servicecategory = ServiceCategory.query.all()
 
-    return render_template('admin/dashboard.html', reviews=reviews, professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
+    return render_template('admin/dashboard.html', reviews=reviews,blocked_users=blocked_users, professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
 
 
 @app.route('/dashboard/customer')
@@ -294,7 +321,11 @@ def customer_dashboard():
     non_verified_professionals = Professional.query.filter_by(verified=False).all()
     verified_professionals = Professional.query.filter_by(verified=True).all()
     review=Review.query.all()
-
+    user = User.query.get(session['user_id'])
+    blocked_user = Block.query.filter_by(blocked_user_id=user.id).first()
+    if blocked_user:
+        flash('You have been blocked from using this service.')
+        return redirect(url_for('blocked')) 
     return render_template('customer/dashboard.html',Review=review, professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,service_requests=service_requests,user=users,customers=customers,services=services)
 
 
@@ -303,6 +334,7 @@ def customer_dashboard():
 
 
 @app.route('/admin/search', methods=['GET'])
+@auth_required
 def admin_search():
     search_by = request.args.get('search_by')
     search_query = request.args.get('search_query')
@@ -393,6 +425,7 @@ def admin_search():
 
 
 @app.route('/customer/search', methods=['GET'])
+@auth_required
 def customer_search():
     search_by = request.args.get('search_by')
     search_query = request.args.get('search_query')
@@ -582,10 +615,28 @@ def delete_service_admin(service_id):
     return redirect(url_for('admin'))
 
 # Route for Block
-@app.route('/delete/<int:user_id>')
-def block(user_id):
+@app.route('/block/<int:user_id>')
+def block_user(user_id):
+    # Check if user is already blocked
+    if not Block.query.filter_by(blocked_user_id=user_id).first():
+        new_block = Block(blocked_user_id=user_id)
+        db.session.add(new_block)
+        db.session.commit()
+        flash('User has been blocked.')
+    else:
+        flash('User is already blocked.')
+    return redirect(url_for('admin'))
 
-    return ''
+@app.route('/unblock/<int:user_id>')
+def unblock_user(user_id):
+    blocked_user = Block.query.filter_by(blocked_user_id=user_id).first()
+    if blocked_user:
+        db.session.delete(blocked_user)
+        db.session.commit()
+        flash('User has been unblocked.','success')
+    else:
+        flash('User is not blocked.')
+    return redirect(url_for('admin'))
 
 @app.route('/reviews/<int:user_id>')
 def view_reviews(user_id):
@@ -763,7 +814,11 @@ def professional_dashboard():
     professional = Professional.query.filter_by(user_id=user_id).first()
     if not professional:
         return redirect(url_for('login'))
-    
+    user = User.query.get(session['user_id'])
+    blocked_user = Block.query.filter_by(blocked_user_id=user.id).first()
+    if blocked_user:
+        flash('You have been blocked from using this service.')
+        return redirect(url_for('blocked')) 
     professional_id = professional.id
     
     # Get the current professional's information
@@ -817,6 +872,18 @@ def professional_accept_request(request_id):
     return redirect(url_for('professional_dashboard'))
 
 
+@app.route('/admin/service_request_details/<int:service_request_id>', methods=['GET'])
+def service_request_details(service_request_id):
+    service_request = ServiceRequest.query.get(service_request_id)
+    
+    # Check if service request exists
+    if not service_request:
+        return "Service request not found", 404
+
+    return render_template('admin/service_request_details.html', service_request=service_request)
+
+
+
 @app.route('/admin/summary')
 def admin_summary():
     # Fetch and prepare data as before
@@ -862,13 +929,3 @@ def admin_summary():
         services_booked=services_booked,
         service_status=service_status_data
     )
-
-@app.route('/admin/service_request_details/<int:service_request_id>', methods=['GET'])
-def service_request_details(service_request_id):
-    service_request = ServiceRequest.query.get(service_request_id)
-    
-    # Check if service request exists
-    if not service_request:
-        return "Service request not found", 404
-
-    return render_template('admin/service_request_details.html', service_request=service_request)
