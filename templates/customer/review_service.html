@@ -1,0 +1,122 @@
+{% extends 'layout.html' %}
+
+{% block title %}Service Review{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card mx-auto shadow-lg" style="max-width: 650px; border-radius: 12px;">
+        <div class="card-body p-4">
+            <h1 class="text-center text-primary fw-bold mb-4">Review Service</h1>
+            <form method="POST" action="{{ url_for('close_and_review_service', request_id=service_request.id) }}">
+                
+                <section class="mb-4">
+                    <h2 class="text-secondary fw-semibold mb-3">Service Details</h2>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <label class="text-muted fw-bold">Service Name:</label>
+                        <p class="mb-0 fw-normal">{{ service.name }}</p>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <label class="text-muted fw-bold">Professional:</label>
+                        <p class="mb-0 fw-normal">{{ professional.user.username }}</p>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <label class="text-muted fw-bold">Date of Request:</label>
+                        <p class="mb-0 fw-normal">{{ service_request.date_of_request.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                </section>
+
+                {% if service_request.service_status != 'Closed' %}
+                    <div class="mb-4">
+                        <label for="rating" class="text-muted fw-bold">Rating:</label>
+                        <select id="rating" name="rating" class="form-select mt-2" required>
+                            <option value="" disabled selected>Select Rating</option>
+                            {% for i in range(1, 6) %}
+                                <option value="{{ i }}">{{ i }} Star{{ 's' if i > 1 else '' }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="remarks" class="text-muted fw-bold">Remarks:</label>
+                        <textarea id="remarks" name="remarks" class="form-control mt-2" rows="4" placeholder="Share your experience..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4">Submit Review</button>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center mt-3">
+                        This service request has already been closed.
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="{{ url_for('customer_dashboard') }}" class="btn btn-secondary px-4">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block Styling %}
+<style>
+    body {
+        background-color: #f9fbfd;
+        font-family: 'Arial', sans-serif;
+    }
+
+    h1, h2, label {
+        color: #34495e;
+    }
+
+    .card {
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        border: none;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+
+    .btn-secondary {
+        background-color: #7f8c8d;
+        border: none;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #636e72;
+    }
+
+    .alert-info {
+        font-size: 15px;
+        background-color: #eaf2f8;
+        color: #2c3e50;
+        border-radius: 8px;
+    }
+
+    .text-primary {
+        color: #3498db !important;
+    }
+
+    .fw-bold {
+        font-weight: 600;
+    }
+
+    .fw-normal {
+        font-weight: 400;
+    }
+
+    .fw-semibold {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

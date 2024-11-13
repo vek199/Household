@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">Admin Dashboard</h2>
+    
+    <!-- Chart Grid -->
+    <div class="row">
+        <!-- Average Customer Ratings of Each Professional -->
+        <div class="col-md-6 mb-4">
+            <h4>Average Customer Ratings of Each Professional</h4>
+            <canvas id="avgCustomerRatingsChart"></canvas>
+        </div>
+
+        <!-- Average Professional Ratings of Each Customer -->
+        <div class="col-md-6 mb-4">
+            <h4>Average Professional Ratings of Each Customer</h4>
+            <canvas id="avgProfessionalRatingsChart"></canvas>
+        </div>
+
+        <!-- Number of Services Booked -->
+        <div class="col-md-6 mb-4">
+            <h4>Number of Services Booked</h4>
+            <canvas id="servicesBookedChart"></canvas>
+        </div>
+
+        <!-- Service Requests Status -->
+        <div class="col-md-6 mb-4">
+            <h4>Service Requests Status</h4>
+            <canvas id="serviceStatusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Load Chart.js and the Datalabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<script>
+    // Average Customer Ratings of Each Professional
+    const avgCustomerRatingsCtx = document.getElementById('avgCustomerRatingsChart').getContext('2d');
+    const avgCustomerRatingsData = {
+        labels: {{ avg_customer_ratings | map(attribute=2) | list | tojson }}, // assuming attribute 2 is the name
+        datasets: [{
+            label: 'Avg Ratings by Customers',
+            data: {{ avg_customer_ratings | map(attribute=1) | list | tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    new Chart(avgCustomerRatingsCtx, {
+        type: 'bar',
+        data: avgCustomerRatingsData,
+        options: {
+            plugins: {
+                datalabels: {
+                    color: 'black',
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: (value) => value.toFixed(2) // Display values above bars
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Professional Names' }},
+                y: { title: { display: true, text: 'Average Rating' }}
+            }
+        }
+    });
+
+    // Average Professional Ratings of Each Customer
+    const avgProfessionalRatingsCtx = document.getElementById('avgProfessionalRatingsChart').getContext('2d');
+    const avgProfessionalRatingsData = {
+        labels: {{ avg_professional_ratings | map(attribute=2) | select("defined") | list | tojson }},
+        datasets: [{
+            label: 'Avg Ratings by Professionals',
+            data: {{ avg_professional_ratings | map(attribute=1) | list | tojson }},
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    };
+    new Chart(avgProfessionalRatingsCtx, {
+        type: 'bar',
+        data: avgProfessionalRatingsData,
+        options: {
+            plugins: {
+                datalabels: {
+                    color: 'black',
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: (value) => value.toFixed(2)
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Customer Names' }},
+                y: { title: { display: true, text: 'Average Rating' }}
+            }
+        }
+    });
+
+    // Number of Services Booked with unique colors
+    const servicesBookedCtx = document.getElementById('servicesBookedChart').getContext('2d');
+    const servicesBookedLabels = {{ services_booked | map(attribute=0) | list | tojson }};
+    const servicesBookedData = {{ services_booked | map(attribute=1) | list | tojson }};
+    const servicesBookedColors = servicesBookedLabels.map((_, i) => `hsl(${(i * 30) % 360}, 70%, 50%)`);
+
+    new Chart(servicesBookedCtx, {
+        type: 'pie',
+        data: {
+            labels: servicesBookedLabels,
+            datasets: [{
+                label: 'Services Booked',
+                data: servicesBookedData,
+                backgroundColor: servicesBookedColors,
+                borderColor: servicesBookedColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    color: 'black',
+                    formatter: (value, context) => `${context.chart.data.labels[context.dataIndex]}: ${value}`
+                }
+            }
+        }
+    });
+
+    // Service Requests Status
+    const serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
+    const serviceStatusData = {
+        labels: {{ service_status | map(attribute=0) | list | tojson }},
+        datasets: [{
+            label: 'Service Request Status',
+            data: {{ service_status | map(attribute=1) | list | tojson }},
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    new Chart(serviceStatusCtx, {
+        type: 'doughnut',
+        data: serviceStatusData,
+        options: {
+            plugins: {
+                datalabels: {
+                    color: 'black',
+                    formatter: (value, context) => `${context.chart.data.labels[context.dataIndex]}: ${value}`
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

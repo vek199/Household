@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block title %}Review Customer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card mx-auto shadow-lg" style="max-width: 650px; border-radius: 12px;">
+        <div class="card-body p-4">
+            <h1 class="text-center text-primary fw-bold mb-4">Review Customer</h1>
+            <form method="POST" action="{{ url_for('professional_review_customer', request_id=service_request.id) }}">
+                
+                <section class="mb-4">
+                    <h2 class="text-secondary fw-semibold mb-3">Service Request Details</h2>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <label class="text-muted fw-bold">Customer Name:</label>
+                        <p class="mb-0 fw-normal">{{ customer.username }}</p>
+                    </div>
+                </section>
+
+                <div class="mb-4">
+                    <label for="rating" class="text-muted fw-bold">Rating:</label>
+                    <select id="rating" name="rating" class="form-select mt-2" required>
+                        <option value="" disabled selected>Select Rating</option>
+                        {% for i in range(1, 6) %}
+                            <option value="{{ i }}">{{ i }} Star{{ 's' if i > 1 else '' }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="review" class="text-muted fw-bold">Review:</label>
+                    <textarea id="review" name="review" class="form-control mt-2" rows="4" placeholder="Provide your feedback..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-4">Submit Review</button>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="{{ url_for('professional_dashboard') }}" class="btn btn-secondary px-4">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

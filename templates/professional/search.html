@@ -1,0 +1,139 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Professional Search
+{% endblock %}
+
+{% block content %}
+<h1 class="display-4 text-center mb-5">Professional Search</h1>
+
+<div class="search-section mb-5">
+    <form action="{{ url_for('professional_search') }}" method="GET" class="form-inline d-flex justify-content-center align-items-center">
+        <label class="mr-2" for="search_by">Search by:</label>
+        <select class="form-control mr-3" id="search_by" name="search_by" required>
+            <option value="" {% if not search_by %}selected{% endif %}>-- Select an option --</option>
+            <option value="location" {% if search_by == 'location' %}selected{% endif %}>Location</option>
+            <option value="date" {% if search_by == 'date' %}selected{% endif %}>Date</option>
+            <option value="pincode" {% if search_by == 'pincode' %}selected{% endif %}>Pincode</option>
+        </select>
+        
+        <input type="text" class="form-control mr-3 search-query" id="search_query" name="search_query" placeholder="Enter search term..." value="{{ search_query }}" required>
+        
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+{% if results %}
+    <!-- Display search results in a table -->
+    <div class="table-section">
+        <h2 class="table-heading">Search Results</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    {% for item in result %}
+                    <td>{{ item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-center">No results found. Try searching for something else.</p>
+{% endif %}
+{% endblock %}
+
+{% block style %}
+<style>
+    .search-section {
+        padding: 2rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .search-query {
+        background: linear-gradient(45deg, #6a11cb, #2575fc);
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 12px 20px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .search-query:focus {
+        background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        border: 1px solid #ff4b2b;
+        outline: none;
+        box-shadow: 0 0 10px rgba(255, 75, 43, 0.5);
+    }
+
+    .form-control {
+        font-size: 1.2rem;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);
+        outline: none;
+    }
+
+    .table-heading {
+        background: linear-gradient(135deg, #4c83ff, #1a60e5);
+        color: #fff;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        text-align: center;
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background: linear-gradient(135deg, #4c83ff, #1a60e5);
+        color: #fff;
+    }
+
+    .search-section form button {
+        padding: 12px 20px;
+        background-color: #1a60e5;
+        border: none;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-section form button:hover {
+        background-color: #0069d9;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

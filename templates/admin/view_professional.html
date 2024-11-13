@@ -1,54 +1,79 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-Professional Profile - {{ professional.user.username }}
+    Professional Profile - {{ professional.user.username }}
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-10 text-center">
-            <!-- Profile Image and Username -->
-            <div class="profile-picture mb-3">
-                <img id="profilePic" src="https://api.dicebear.com/9.x/lorelei/svg?seed={{ professional.user.username }}" alt="Profile Picture" class="rounded-circle shadow" width="150" />
+        <div class="col-md-8 text-center">
+            
+            <!-- Profile Section -->
+            <div class="profile-header mb-5">
+                <img src="https://api.dicebear.com/9.x/lorelei/svg?seed={{ professional.user.username }}" 
+                     alt="Profile Picture" 
+                     class="rounded-circle shadow-lg mb-3" 
+                     width="180" />
+                <h1 class="display-4 text-dark">{{ professional.user.username }}</h1>
+                <span class="status-badge {{ 'bg-success' if professional.verified else 'bg-warning' }} px-3 py-1 rounded-pill text-white mt-2">
+                    {{ 'Verified' if professional.verified else 'Not Verified' }}
+                </span>
             </div>
-            <h2 class="mt-3 display-5">{{ professional.user.username }}</h2>
-            <span class="badge badge-success badge-lg">{{ 'Verified' if professional.verified else 'Not Verified' }}</span>
 
-            <!-- Professional Info Section -->
-            <div class="row text-start justify-content-center mt-5">
-                <div class="col-md-5">
-                    <div class="info-box rounded shadow-sm p-4 mb-4">
-                        <h6><i class="fas fa-envelope me-2"></i>Email:</h6>
-                        <p>{{ professional.user.email }}</p>
-                    </div>
-                    <div class="info-box rounded shadow-sm p-4 mb-4">
-                        <h6><i class="fas fa-phone me-2"></i>Phone:</h6>
-                        <p>{{ professional.user.phone_number }}</p>
+            <!-- Info Cards Section -->
+            <div class="row gx-5 gy-4">
+                <div class="col-12 col-md-6">
+                    <div class="info-card bg-light border-0 shadow-sm p-4 rounded-3">
+                        <h6 class="text-muted mb-1"><i class="fas fa-envelope text-primary me-2"></i>Email</h6>
+                        <p class="fs-5">{{ professional.user.email }}</p>
                     </div>
                 </div>
-                <div class="col-md-5">
-                    <div class="info-box rounded shadow-sm p-4 mb-4">
-                        <h6><i class="fas fa-briefcase me-2"></i>Service Type:</h6>
-                        <p>{{ professional.service_type }}</p>
+                <div class="col-12 col-md-6">
+                    <div class="info-card bg-light border-0 shadow-sm p-4 rounded-3">
+                        <h6 class="text-muted mb-1"><i class="fas fa-phone text-primary me-2"></i>Phone</h6>
+                        <p class="fs-5">{{ professional.user.phone_number }}</p>
                     </div>
-                    <div class="info-box rounded shadow-sm p-4 mb-4">
-                        <h6><i class="fas fa-calendar-alt me-2"></i>Experience:</h6>
-                        <p>{{ professional.experience }} years</p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="info-card bg-light border-0 shadow-sm p-4 rounded-3">
+                        <h6 class="text-muted mb-1"><i class="fas fa-briefcase text-primary me-2"></i>Service Type</h6>
+                        <p class="fs-5">{{ professional.service_type }}</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="info-card bg-light border-0 shadow-sm p-4 rounded-3">
+                        <h6 class="text-muted mb-1"><i class="fas fa-calendar-alt text-primary me-2"></i>Experience</h6>
+                        <p class="fs-5">{{ professional.experience }} years</p>
                     </div>
                 </div>
             </div>
 
             <!-- Toggle Block Professional -->
-            <div class="form-group d-flex justify-content-center align-items-center mb-4">
-                <label for="blockSwitch" class="form-label me-3">Block Professional</label>
-                <div class="form-check form-switch">
-                    <input class="form-check-input toggle-lg" type="checkbox" id="blockSwitch" data-userid="{{ professional.user.id }}" {% if professional.blocked %}checked{% endif %}>
+            <div class="toggle-section mt-5">
+                <div class="d-flex justify-content-center align-items-center mb-3">
+                    <label for="blockSwitch" class="form-label text-muted fs-5 fw-semibold">Block Professional</label>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <input class="form-check-input form-check-input-lg" 
+                           type="checkbox" 
+                           id="blockSwitch" 
+                           data-userid="{{ professional.user.id }}" 
+                           {% if professional.blocked %}checked{% endif %} 
+                           data-bs-toggle="toggle" 
+                           data-on="Active" 
+                           data-off="Inactive" 
+                           data-onstyle="danger" 
+                           data-offstyle="secondary">
                 </div>
             </div>
-
-            <!-- Back to Dashboard Button -->
-            <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-4 px-4 py-2">Back to Dashboard</a>
+    
+            <!-- Back Button -->
+            <div class="mt-5">
+                <a href="{{ url_for('admin') }}" class="btn btn-outline-dark rounded-pill px-5 py-2">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
         </div>
     </div>
 </div>

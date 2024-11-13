@@ -6,28 +6,123 @@
 
 {% block content %}
 <hr>
+<div class="container">
+    <div class="heading-container">
+        <div class="heading-box">
+            <h2>What are you looking for?</h2>
+        </div>
+    </div>
+
 <div class="categories-list">
     <div class="services-scrollable">
-        {% for service in servicecategory %}
-        <div class="card" style="width: 18rem; display: inline-block; margin-right: 10px;">
-            <img src="https://picsum.photos/150/150" class="card-img-top" alt="{{ service.name }}">
-            <div class="card-body">
-                <h5 class="card-title">{{ service.name }}</h5>
-                <p class="card-text">
-                    {{ service.description or "No description available" }}
-                </p>
-                <button onclick="location.href='{{ url_for('list_services', service_id=service.id) }}'" class="btn btn-outline-info">
-                    <i class="fas fa-info-circle"></i> See More
-                </button>
+        <div class="row">
+            {% for service in services %}
+            <div class="col-3 mb-4"> <!-- Adjusted for Bootstrap grid -->
+                <div class="card equal-height">
+                    <img src="https://picsum.photos/600/600" class="card-img-top" alt="{{ service.name }}">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h5 class="card-title">{{ service.name }}</h5>
+                        <p class="card-text text-truncate">
+                            {{ service.description or "No description available" }}
+                        </p>
+                        <button onclick="location.href='{{ url_for('list_services', service_id=service.id) }}'" class="btn btn-outline-info mt-auto">
+                            <i class="fas fa-info-circle"></i> See More
+                        </button>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+    </div>
+</div>
+
+<hr class="section-divider">
+<!-- Service History Section -->
+<div class="container mt-5">
+    <h2>Service History</h2>
+    <div class="rectangular-container">
+        <table class="table table-hover mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col" class="text-center">ID</th>
+                    <th scope="col" class="text-center">Service Name</th>
+                    <th scope="col" class="text-center">Professional Name</th>
+                    <th scope="col" class="text-center">Professional Phone No.</th>
+                    <th scope="col" class="text-center">Status</th>
+                    <th scope="col" class="text-center">Rating</th>
+                    <th scope="col" class="text-center">Remarks</th>
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                <tr>
+                    <td class="text-center">{{ request.id }}</td>
+                    <td class="text-center">{{ request.service.name }}</td>
+                    <td class="text-center">{{ request.professional.user.username }}</td>
+                    <td class="text-center">{{ request.professional.user.phone_number }}</td>
+                    <td class="text-center">
+                        {% if request.service_status == 'Requested' %}
+                            <span class="badge badge-warning">{{ request.service_status }}</span>
+                        {% elif request.service_status == 'assigned' %}
+                            <span class="badge badge-info">{{ request.service_status }}</span>
+                        {% elif request.service_status == 'Closed' %}
+                            <span class="badge badge-success">Completed</span>
+                        {% elif request.service_status == 'Cancelled' %}
+                            <span class="badge badge-danger">Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% set review = request.reviews | selectattr('reviewer_id', 'equalto', session['user_id']) | selectattr('service_request_id', 'equalto', request.id) | first %}
+                        {% if review %}
+                            {{ review.rating }}
+                            {% if review.rating == 1 %}
+                                <span>😞</span> <!-- Sad face for 1 -->
+                            {% elif review.rating == 2 %}
+                                <span>🙁</span> <!-- Slightly sad face for 2 -->
+                            {% elif review.rating == 3 %}
+                                <span>😐</span> <!-- Neutral face for 3 -->
+                            {% elif review.rating == 4 %}
+                                <span>🙂</span> <!-- Slightly happy face for 4 -->
+                            {% elif review.rating == 5 %}
+                                <span>😊</span> <!-- Happy face for 5 -->
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% set review = request.reviews | selectattr('reviewer_id', 'equalto', session['user_id']) | selectattr('service_request_id', 'equalto', request.id) | first %}
+                        {% if review %}
+                            {{ review.review }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if request.service_status == 'Requested' %}
+                            <form action="{{ url_for('cancel_service', request_id=request.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                            </form>
+                        {% elif request.service_status == 'assigned' %}
+                            <form action="{{ url_for('close_and_review_service', request_id=request.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary btn-sm">Close and Review</button>
+                            </form>
+                        {% elif request.service_status == 'Completed' %}
+                            <span class="badge badge-success">Review Submitted</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
 
 {% block style %}
 <style>
+    /* Layout adjustments */
     .categories-list {
         display: flex;
         flex-direction: column;
@@ -36,32 +131,116 @@
     }
 
     .services-scrollable {
-        display: flex;  /* Align items in a row */
-        overflow-x: auto; /* Allow horizontal scrolling */
         padding: 10px;
-        white-space: nowrap; /* Prevent wrapping */
-        scrollbar-width: thin; /* Style scrollbar (for Firefox) */
     }
 
-    .services-scrollable::-webkit-scrollbar {
-        height: 8px; /* Height of the horizontal scrollbar */
-    }
-
-    .services-scrollable::-webkit-scrollbar-thumb {
-        background-color: #cccccc; /* Color of the scrollbar */
-        border-radius: 10px; /* Rounded corners */
-    }
-
+    /* Ensure cards have equal height */
     .card {
+        height: 350px; /* Fixed height for all cards */
         transition: transform 0.2s ease-in-out;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card img {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        height: 150px; /* Fixed height for images */
+        object-fit: cover; /* Ensure the image fits inside the card */
+    }
+
+    .card-title {
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .heading-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+        margin-bottom: 30px;
+    }
+    .heading-box {
+        background-color: #fff;
+        padding: 20px 40px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    .heading-box h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    
+    .card-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* Limits to 3 lines */
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
     }
 
     .card:hover {
         transform: scale(1.05);
+        box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
     }
 
     .btn {
         margin-top: 10px;
+    }
+
+    /* Separate sections */
+    .section-divider {
+        border-top: 2px solid #6c757d;
+        margin: 40px 0;
+    }
+
+    /* Table styling */
+    .rectangular-container {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    table {
+        width: 100%;
+        background-color: #ffffff;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f3f4;
+    }
+
+    .thead-dark {
+        background-color: #343a40;
+        color: white;
+    }
+
+    th, td {
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+    }
+
+    .badge-info {
+        background-color: #17a2b8;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
     }
 </style>
 {% endblock %}

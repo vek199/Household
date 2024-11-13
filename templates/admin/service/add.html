@@ -6,45 +6,45 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="display-4 mb-4">Add New Service</h1>
+    <!-- Title Section -->
+    <div class="text-center mb-4">
+        <h1 class="display-5">Add New Service</h1>
+        <p class="lead text-muted">Fill in the details below to add a new service to the catalog.</p>
+    </div>
 
-    <form action="{{ url_for('add_service_post') }}" method="post">
+    <!-- Form -->
+    <form action="{{ url_for('add_service_post') }}" method="post" class="p-4 rounded shadow-sm bg-light">
+        <!-- Service Name -->
         <div class="mb-3">
             <label for="name" class="form-label">Service Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter service name" required>
         </div>
 
+        <!-- Price -->
         <div class="mb-3">
-            <label for="service_type" class="form-label">Service Type</label>
-            <select name="service_type" class="form-control" required>
-                <option value="" disabled selected>Select a category:</option>
-                {% for service in ServiceCategory %}
-                <option value="{{ service.name }}">{{ service.name }}</option>
-                {% endfor %}
-            </select>
+            <label for="price" class="form-label">Price ($)</label>
+            <input type="number" step="0.01" class="form-control" id="price" name="price" placeholder="Enter price" required>
         </div>
 
-        <div class="mb-3">
-            <label for="price" class="form-label">Price</label>
-            <input type="number" step="0.01" class="form-control" id="price" name="price" required>
-        </div>
+        <!-- Time Required -->
         <div class="mb-3">
             <label for="time_required" class="form-label">Time Required (in minutes)</label>
-            <input type="number" class="form-control" id="time_required" name="time_required" required>
+            <input type="number" class="form-control" id="time_required" name="time_required" placeholder="Enter time required" required>
         </div>
+
+        <!-- Description -->
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Provide a brief description of the service" required></textarea>
         </div>
 
-
-        <!-- Action Buttons: Add and Cancel -->
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">
-                <i class="fa fa-plus" aria-hidden="true"></i> Add Service
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fa fa-plus"></i> Add Service
             </button>
-            <a href="{{ url_for('admin') }}" class="btn btn-secondary">
-                <i class="fa fa-times" aria-hidden="true"></i> Cancel
+            <a href="{{ url_for('admin') }}" class="btn btn-outline-danger btn-lg">
+                <i class="fa fa-times"></i> Cancel
             </a>
         </div>
     </form>

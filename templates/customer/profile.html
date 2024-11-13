@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+
+{% block heading %}
+<title>Customer Profile</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <img id="profile-pic" src="" class="img-fluid rounded-circle mb-3" alt="Profile Picture" width="200" height="200">
+            <h3>{{ user.username }}</h3>
+        </div>
+        <div class="col-md-8">
+            <h4>Profile Details</h4>
+            <table class="table table-striped mt-3">
+                <tr>
+                    <th scope="row">Username</th>
+                    <td>{{ user.username }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Email</th>
+                    <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Phone Number</th>
+                    <td>{{ user.phone_number }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Address</th>
+                    <td>{{ address }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Location Pin Code</th>
+                    <td>{{ location_pin_code }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Additional Info</th>
+                    <td>{{ additional_info }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fetch the profile picture from the external API
+    fetch("https://api.generated.photos/api/v1/faces/random")
+        .then(response => response.json())
+        .then(data => {
+            // Assuming the API returns an image URL
+            document.getElementById("profile-pic").src = data.url || "https://via.placeholder.com/200";
+        })
+        .catch(error => {
+            console.error("Error fetching profile picture:", error);
+            document.getElementById("profile-pic").src = "https://via.placeholder.com/200";
+        });
+</script>
+{% endblock %}

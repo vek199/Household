@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Reviews for {{ user.username }}</h2>
+    {% if reviews %}
+        <div class="row">
+            {% for review in reviews %}
+                {% if review.reviewee_id == user.id %}
+                    <div class="col-md-8 offset-md-2 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">{{ review.service_request.service.name }}</h5>
+                                <small class="text-muted">Reviewed by: {{ review.reviewer.username }}</small>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    Rating:
+                                    {% for i in range(1, 6) %}
+                                        <i class="fa {% if i <= review.rating %}fa-star{% else %}fa-star-o{% endif %}"></i>
+                                    {% endfor %}
+                                </h6>
+                                <p class="card-text">{{ review.review }}</p>
+                            </div>
+                            <div class="card-footer text-muted">
+                                <small>Reviewed on {{ review.timestamp.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No reviews available for this user.</p>
+    {% endif %}
+</div>
+{% endblock %}

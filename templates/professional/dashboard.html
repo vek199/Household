@@ -1,0 +1,117 @@
+{% extends 'layout.html' %}
+{% block heading %}
+    <title>Professional Dashboard</title>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mt-4">Professional Dashboard</h1>
+            <div class="h3 text-muted">
+                hello <strong class="text-dark" style="font-size: 2rem;">@{{ current_professional.user.username }}</strong>
+            </div>
+        </div>
+
+        <!-- Active Service Section -->
+        <h2 class="mt-5">Active Service</h2>
+        {% if active_request %}
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark text-center">
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact No.</th>
+                    <th>Location (Pincode)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td>{{ active_request.id }}</td>
+                    <td>{{ active_request.customer.username }}</td>
+                    <td>{{ active_request.customer.phone_number }}</td>
+                    <td>{{ active_request.customer_location }} ({{ active_request.customer_pin_code }})</td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <p>No active service currently assigned.</p>
+        {% endif %}
+
+        <!-- Today's Services Table -->
+        <h2 class="mt-5">Today’s Services</h2>
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark text-center">
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact No.</th>
+                    <th>Location (Pincode)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                <tr class="text-center">
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.customer.username }}</td>
+                    <td>{{ request.customer.phone_number }}</td>
+                    <td>{{ request.customer_location }} ({{ request.customer_pin_code }})</td>
+                    <td>
+                        {% if current_professional.accepted_request_id == request.id %}
+                            <button type="button" class="btn btn-secondary btn-sm w-100" disabled>Accepted</button>
+                        {% elif current_professional.accepted_request_id %}
+                            <button type="button" class="btn btn-secondary btn-sm w-100" disabled>Accept</button>
+                        {% else %}
+                            <form action="{{ url_for('professional_accept_request', request_id=request.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm w-100">Accept</button>
+                            </form>
+                        {% endif %}
+                        <a href="#" class="btn btn-danger btn-sm w-100 mt-2">Reject</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+       <!-- Closed Services Table -->
+<h2 class="mt-5">Closed Services</h2>
+<table class="table table-bordered table-hover">
+    <thead class="thead-dark text-center">
+        <tr>
+            <th>ID</th>
+            <th>Customer Name</th>
+            <th>Contact No.</th>
+            <th>Location (Pincode)</th>
+            <th>Date of Completion</th>
+            <th>Rating</th>
+            <th>Action</th>  <!-- New column for Review button -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in closed_requests %}
+        <tr class="text-center">
+            <td>{{ request.id }}</td>
+            <td>{{ request.customer.username }}</td>
+            <td>{{ request.customer.phone_number }}</td>
+            <td>{{ request.customer_location }} ({{ request.customer_pin_code }})</td>
+            <td>
+                {% if request.date_of_completion %}
+                    {{ request.date_of_completion.strftime('%d/%m/%Y') }}
+                {% else %}
+                    Not Completed
+                {% endif %}
+            </td>
+            
+            <td>{{ request.rating if request.rating else 'Not rated' }}</td>
+            <td>
+                {% if not request.reviews | selectattr("reviewer_id", "equalto", current_professional.user.id) | list %}
+                    <a href="{{ url_for('professional_review_customer', request_id=request.id) }}" class="btn btn-primary btn-sm">Review</a>
+                {% else %}
+                    <span class="badge bg-secondary">Reviewed</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </div>
+{% endblock %}

@@ -11,12 +11,18 @@
                 <a class="nav-link" aria-current="page" href="{{url_for('index')}}">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="">Search</a>
+                <a class="nav-link" aria-current="page" href="{{url_for('search')}}">Search</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="">Summary</a>
               </li>
-              
+              <li class="nav-item"></li>
+              {% if session['role'] == 'professional' %}
+              <a class="nav-link" aria-current="page" href="{{ url_for('professional_profile', user_id=session['user_id']) }}">Profile</a>
+          {% elif session['role'] == 'customer' %}
+              <a class="nav-link" aria-current="page" href="{{ url_for('customer_profile') }}">Profile</a>
+          {% endif %}
+                      </li>
               <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="{{url_for('logout')}}">Log-Out</a>
               </li>
