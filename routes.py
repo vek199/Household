@@ -10,13 +10,13 @@ from functools import wraps
 from datetime import datetime
 from app import app
 from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy import func
+
 
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'uploads')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
-
-print('routes running ---- >> ', UPLOAD_FOLDER)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
 
 
 def auth_required(func):
@@ -49,6 +49,78 @@ def admin_required(func):
         return func(*args, **kwargs)
     return inner
 
+
+
+@app.route('/admin/summary', methods=['GET'])
+def admin_summary():
+    return render_template('admin/summary.html')
+    
+@app.route('/api/admin/summary', methods=['GET'])
+def admin_summary_api():
+    # Fetch average customer ratings for professionals, handling None values
+    avg_customer_ratings = db.session.query(
+        Professional.user_id.label('professional_id'),
+        db.func.coalesce(db.func.avg(Review.rating), 0).label('avg_rating')
+    ).join(ServiceRequest, ServiceRequest.professional_id == Professional.user_id) \
+     .join(Review, Review.service_request_id == ServiceRequest.id) \
+     .filter(Review.reviewee_id == Professional.user_id) \
+     .group_by(Professional.user_id).all()
+    
+    avg_customer_ratings = [
+        {"professional_id": rating.professional_id, "avg_rating": rating.avg_rating or 0}
+        for rating in avg_customer_ratings
+    ]
+
+    # Fetch average professional ratings for customers, handling None values
+    avg_professional_ratings = db.session.query(
+        User.id.label('customer_id'),
+        db.func.coalesce(db.func.avg(Review.rating), 0).label('avg_rating')
+    ).join(ServiceRequest, ServiceRequest.customer_id == User.id) \
+     .join(Review, Review.service_request_id == ServiceRequest.id) \
+     .filter(Review.reviewee_id == User.id) \
+     .group_by(User.id).all()
+
+    avg_professional_ratings = [
+        {"customer_id": rating.customer_id, "avg_rating": rating.avg_rating or 0}
+        for rating in avg_professional_ratings
+    ]
+
+    # Count services booked
+    services_booked = db.session.query(
+        Service.name,
+        db.func.count(ServiceRequest.id).label('count')
+    ).join(ServiceRequest, Service.id == ServiceRequest.service_id) \
+     .group_by(Service.id).all()
+
+    services_booked = [
+        {"service_name": service, "count": count}
+        for service, count in services_booked
+    ]
+
+    # Count service request statuses
+    service_status_counts = {
+        'Requested': db.session.query(db.func.count(ServiceRequest.id))
+                        .filter(ServiceRequest.service_status == 'Requested').scalar(),
+        'Assigned': db.session.query(db.func.count(ServiceRequest.id))
+                        .filter(ServiceRequest.service_status == 'Assigned').scalar(),
+        'Closed': db.session.query(db.func.count(ServiceRequest.id))
+                        .filter(ServiceRequest.service_status == 'Closed').scalar(),
+        'Cancelled': db.session.query(db.func.count(ServiceRequest.id))
+                        .filter(ServiceRequest.service_status == 'Cancelled').scalar()
+    }
+
+    service_status_data = [
+        {"status": status, "count": count or 0}
+        for status, count in service_status_counts.items()
+    ]
+
+    # Return sanitized data as JSON response
+    return jsonify({
+        "avg_customer_ratings": avg_customer_ratings,
+        "avg_professional_ratings": avg_professional_ratings,
+        "services_booked": services_booked,
+        "service_status_counts": service_status_data
+    })
 
 
 
@@ -196,6 +268,10 @@ def allowed_file(filename):
 
 
 import os
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+print('Routes running ---- >> ', UPLOAD_FOLDER)
 
 @app.route('/register/professional', methods=['GET', 'POST'])
 def register_professional():
@@ -217,7 +293,10 @@ def register_professional():
 
         # Validate file upload
         if file and allowed_file(file.filename):
-            unique_filename = f"{uuid.uuid4().hex}_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"  # Change .png based on the actual file type
+            # Generate a secure filename with professional name
+            file_extension = file.filename.rsplit('.', 1)[1].lower()
+            sanitized_username = secure_filename(username.replace(" ", "_"))  # Replace spaces with underscores
+            unique_filename = f"{sanitized_username}_{uuid.uuid4().hex}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file_extension}"
             
             # Check if the upload folder exists, if not create it
             upload_folder = app.config['UPLOAD_FOLDER']
@@ -306,23 +385,52 @@ def admin():
     verified_professionals = Professional.query.filter_by(verified=True).all()
     reviews = Review.query.all()
     blocked_users = [block.blocked_user_id for block in Block.query.all()]
+    service_requests = ServiceRequest.query.options(
+        joinedload(ServiceRequest.customer),
+        joinedload(ServiceRequest.professional),
+        joinedload(ServiceRequest.reviews)
+    ).all()
+
+    # Prepare data with ratings
+    service_requests_data = []
+    for request in service_requests:
+        professional_review = None
+        customer_review = None
+
+        for review in request.reviews:
+            if review.reviewer_id == request.customer_id and review.reviewee_id == request.professional_id:
+                professional_review = review
+            elif review.reviewer_id == request.professional_id and review.reviewee_id == request.customer_id:
+                customer_review = review
+
+        service_requests_data.append({
+            'id': request.id,
+            'professional_username': request.professional.username if request.professional else 'Not Assigned',
+            'date_of_request': request.date_of_request,
+            'service_status': request.service_status,
+            'customer_rating': professional_review.rating if professional_review else 'N/A',
+            'professional_rating': customer_review.rating if customer_review else 'N/A',
+        })
+    
     # servicecategory = ServiceCategory.query.all()
 
-    return render_template('admin/dashboard.html', reviews=reviews,blocked_users=blocked_users, professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,service_requests=service_requests,users=users,customers=customers,services=services)
+    return render_template('admin/dashboard.html',service_requests=service_requests_data,reviews=reviews,blocked_users=blocked_users, professionals=professionals,non_verified_professionals=non_verified_professionals,verified_professionals=verified_professionals,users=users,customers=customers,services=services)
 
 
 @app.route('/dashboard/customer')
+@auth_required
 def customer_dashboard():
     professionals = Professional.query.all()
     users = User.query.all()
     customers = CustomerProfile.query.all()
     services = Service.query.all()
-    service_requests = ServiceRequest.query.all()
     non_verified_professionals = Professional.query.filter_by(verified=False).all()
     verified_professionals = Professional.query.filter_by(verified=True).all()
     review=Review.query.all()
     user = User.query.get(session['user_id'])
     blocked_user = Block.query.filter_by(blocked_user_id=user.id).first()
+    customer_id = session['user_id']
+    service_requests = ServiceRequest.query.filter_by(customer_id=customer_id).all()
     if blocked_user:
         flash('You have been blocked from using this service.')
         return redirect(url_for('blocked')) 
@@ -423,7 +531,6 @@ def admin_search():
     return render_template('admin/search.html', results=results,search_by=search_by, search_query=search_query, columns=columns)
 
 
-
 @app.route('/customer/search', methods=['GET'])
 @auth_required
 def customer_search():
@@ -431,15 +538,13 @@ def customer_search():
     search_query = request.args.get('search_query')
     results = []
     columns = []
-
-    if search_by == 'service_name':
-        services = Service.query.filter(
-            Service.name.ilike(f"%{search_query}%")
-        ).all()
+    if search_by == 'service_name' and search_query:
+        print(Service.query.all())
+        services = Service.query.filter(Service.name.ilike(f"%{search_query}%")).all()
         columns = ["ID", "Service Name", "Price", "Description"]
         results = [[service.id, service.name, service.price, service.description] for service in services]
 
-    elif search_by == 'pincode':
+    elif search_by == 'pincode' and search_query:
         requests = ServiceRequest.query.filter(
             ServiceRequest.customer_pin_code.ilike(f"%{search_query}%")
         ).all()
@@ -449,7 +554,7 @@ def customer_search():
             for request in requests
         ]
 
-    elif search_by == 'location':
+    elif search_by == 'location' and search_query:
         requests = ServiceRequest.query.filter(
             ServiceRequest.customer_location.ilike(f"%{search_query}%")
         ).all()
@@ -477,7 +582,7 @@ def professional_search():
             [
                 request.id,
                 request.service.name,
-                request.professional.user.username,
+                request.professional.username,
                 request.customer.username,
                 request.customer_location,
                 request.service_status
@@ -496,7 +601,7 @@ def professional_search():
                 [
                     request.id,
                     request.service.name,
-                    request.professional.user.username,
+                    request.professional.username,
                     request.customer.username,
                     request.date_of_request,
                     request.service_status
@@ -516,7 +621,7 @@ def professional_search():
             [
                 request.id,
                 request.service.name,
-                request.professional.user.username,
+                request.professional.username,
                 request.customer.username,
                 request.customer_pin_code,
                 request.service_status
@@ -548,19 +653,79 @@ def professional_profile(user_id):
     return render_template('professional/profile.html', professional=professional)
 
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET'])
 @auth_required
 def customer_profile():
     user = User.query.get(session['user_id'])
     if not user:
-        flash('User not found.', 'danger') 
+        flash('User not found.', 'danger')
         return redirect(url_for('index'))
-    
-    if user.role != 'customer': 
-        flash('Unauthorized access.', 'danger')  
-        return redirect(url_for('index')) 
-    
-    return render_template('customer/profile.html', user=user)  
+
+    if user.role != 'customer':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('index'))
+
+    return render_template('customer/profile.html', user=user)
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@auth_required
+def edit_customer_profile():
+    user = User.query.get(session['user_id'])
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('index'))
+
+    if user.role != 'customer':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        # Get form data
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        phone_number = request.form.get('phone_number', '').strip()
+        address = request.form.get('address', '').strip()
+        location_pin_code = request.form.get('location_pin_code', '').strip()
+
+        # Validate inputs
+        errors = []
+        if not username or len(username) < 3:
+            errors.append("Username must be at least 3 characters long.")
+        if not email or '@' not in email or '.' not in email:
+            errors.append("Please provide a valid email address.")
+        if not phone_number.isdigit() or len(phone_number) != 10:
+            errors.append("Phone number must be exactly 10 digits.")
+        if not address or len(address) < 5:
+            errors.append("Address must be at least 5 characters long.")
+        if not location_pin_code.isdigit() or len(location_pin_code) != 6:
+            errors.append("Pin code must be exactly 6 digits.")
+
+        if errors:
+            for error in errors:
+                flash(error, 'danger')
+            return render_template('customer/edit_profile.html', user=user)
+
+        # Update user fields
+        user.username = username
+        user.email = email
+        user.phone_number = phone_number
+
+        if hasattr(user, 'customer_profile'):
+            user.customer_profile.address = address
+            user.customer_profile.location_pin_code = location_pin_code
+
+        try:
+            # Save changes to the database
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating profile: {str(e)}', 'danger')
+
+        return redirect(url_for('customer_profile'))
+
+    return render_template('customer/edit_profile.html', user=user)
+ 
 
 @app.route('/service/add')
 @auth_required  # Ensure only logged-in users can add a service
@@ -662,10 +827,19 @@ def approve_professional(id):
 # Route for rejecting a professional
 @app.route('/professional/reject/<int:id>', methods=['POST'])
 def reject_professional(id):
-    professional = Professional.query.get_or_404(id)
-    db.session.delete(professional)
-    db.session.commit()
-    flash(f'Professional {professional.user.username} has been rejected and removed.', 'success')
+    professional = Professional.query.get(id)
+    if not professional:
+        flash('Professional not found.', 'danger')
+        return redirect(url_for('admin'))
+
+    try:
+        professional_name = professional.user.username  # Store the name before deletion
+        db.session.delete(professional)
+        db.session.commit()
+        flash(f'Professional {professional_name} has been rejected and removed.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred while rejecting the professional: {str(e)}', 'danger')
     return redirect(url_for('admin'))  # Redirect to admin dashboard
 
 # Route for deleting a professional
@@ -753,7 +927,7 @@ def close_and_review_service(request_id):
         service_request.date_of_completion = datetime.utcnow()
         review = Review(
             reviewer_id=session['user_id'],
-            reviewee_id=service_request.customer_id,
+            reviewee_id=service_request.professional_id,
             service_request_id=service_request.id,
             rating=int(rating),
             review=remarks
@@ -803,45 +977,57 @@ def professional_review_customer(request_id):
     customer = service_request.customer
     return render_template('professional/review_customer.html', service_request=service_request, customer=customer)
 
-
 @app.route('/dashboard/professional')
 def professional_dashboard():
+    # Get the logged-in user's ID from the session
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('login'))
 
-    # Fetch professional based on the logged-in user's ID
+    # Fetch the professional profile linked to the logged-in user
     professional = Professional.query.filter_by(user_id=user_id).first()
     if not professional:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    blocked_user = Block.query.filter_by(blocked_user_id=user.id).first()
+
+    # Check if the user is blocked
+    blocked_user = Block.query.filter_by(blocked_user_id=user_id).first()
     if blocked_user:
         flash('You have been blocked from using this service.')
         return redirect(url_for('blocked')) 
-    professional_id = professional.id
-    
-    # Get the current professional's information
-    professional = Professional.query.get(professional_id)
 
-    # Fetch active, requested, and closed requests with case-insensitive filtering
-    active_request = ServiceRequest.query.filter_by(professional_id=professional_id).filter(ServiceRequest.service_status.ilike('assigned')).first()
-    requests = ServiceRequest.query.filter_by(professional_id=professional_id).filter(ServiceRequest.service_status.ilike('requested')).all()
-    closed_requests = ServiceRequest.query.filter_by(professional_id=professional_id).filter(ServiceRequest.service_status.ilike('closed')).all()
+    # Calculate the average rating for the professional
+    avg_rating = professional.average_rating
+    if avg_rating is not None:
+        print(f"Average Rating: {avg_rating}")
+    else:
+        print("No reviews available for this professional.")
 
-    # Debugging output to verify data fetching
+    # Fetch service requests related to the professional
+    professional_id = professional.user_id
+    active_request = ServiceRequest.query.filter_by(professional_id=professional_id).filter(
+        ServiceRequest.service_status.ilike('assigned')
+    ).first()
+    requests = ServiceRequest.query.filter_by(professional_id=professional_id).filter(
+        ServiceRequest.service_status.ilike('Requested')
+    ).all()
+    closed_requests = ServiceRequest.query.filter_by(professional_id=professional_id).filter(
+        ServiceRequest.service_status.ilike('Closed')
+    ).all()
+
+    # Debugging outputs to verify data fetching
+    print(f"Professional ID: {professional_id}")
     print('Active request:', active_request)
     print('Requested services:', requests)
     print('Closed services:', closed_requests)
-    print(f"Professional ID: {professional_id}")
 
-    # Render the dashboard template with retrieved data
+    # Render the dashboard template with all necessary data
     return render_template(
         'professional/dashboard.html',
         active_request=active_request,
         requests=requests,
         closed_requests=closed_requests,
         current_professional=professional,
+        avg_rating=avg_rating  # Pass the average rating to the template
     )
 
 
@@ -856,7 +1042,7 @@ def professional_accept_request(request_id):
         flash("You are not authorized to accept requests.")
         return redirect(url_for('dashboard'))
 
-    active_request = ServiceRequest.query.filter_by(professional_id=professional.id, service_status='assigned').first()
+    active_request = ServiceRequest.query.filter_by(professional_id=professional.user_id, service_status='assigned').first()
     if active_request:
         flash("You already have an active service request. Complete it before accepting another.")
         return redirect(url_for('professional_dashboard'))
@@ -864,7 +1050,7 @@ def professional_accept_request(request_id):
     service_request = ServiceRequest.query.get(request_id)
     if service_request:
         service_request.service_status = 'assigned'
-        service_request.professional_id = professional.id
+        service_request.professional_id = professional.user_id
         professional.location = service_request.customer_location
         db.session.commit()
 
@@ -881,51 +1067,57 @@ def service_request_details(service_request_id):
         return "Service request not found", 404
 
     return render_template('admin/service_request_details.html', service_request=service_request)
+from flask import jsonify
 
 
 
-@app.route('/admin/summary')
-def admin_summary():
-    # Fetch and prepare data as before
-    # Modify avg_customer_ratings query to handle None values
-    avg_customer_ratings = db.session.query(
-        Professional.id,
-        db.func.coalesce(db.func.avg(Review.rating), 0).label('avg_rating')  # replace None ratings with 0
-    ).join(ServiceRequest, ServiceRequest.professional_id == Professional.id) \
-    .join(Review, Review.service_request_id == ServiceRequest.id) \
-    .filter(Review.reviewee_id == Professional.user_id) \
-    .group_by(Professional.id).all()
+    
+ 
+@app.route('/customer/summary')
+def customer_summary():
+    id = session.get('user_id')
+    service_requests = ServiceRequest.query.filter_by(customer_id=id).order_by(ServiceRequest.service_status).all()
+    
+    status_count = {}
+    for request in service_requests:
+        status_count[request.service_status] = status_count.get(request.service_status, 0) + 1
+    
+    return render_template('customer/summary.html', service_requests=service_requests, status_count=status_count)
+@app.route('/professional/summary')
+def professional_summary():
+    professional_id = session.get('user_id')
+    if not professional_id:
+        return "Professional ID not found in session."
 
-    # Modify avg_professional_ratings query similarly
-    avg_professional_ratings = db.session.query(
-        User.id,
-        db.func.coalesce(db.func.avg(Review.rating), 0).label('avg_rating')
-    ).join(ServiceRequest, ServiceRequest.customer_id == User.id) \
-    .join(Review, Review.service_request_id == ServiceRequest.id) \
-    .filter(Review.reviewee_id == User.id) \
-    .group_by(User.id).all()
+    # Fetch reviews for the professional
+    reviews = Review.query.filter_by(reviewee_id=professional_id).all()
+    print(f"Reviews found: {reviews}")
 
+    # Calculate average rating
+    avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.reviewee_id == professional_id).scalar()
+    avg_rating = avg_rating if avg_rating is not None else 0
+    print(f"Average rating: {avg_rating}")
 
-    services_booked = db.session.query(
-        Service.name,
-        db.func.count(ServiceRequest.id).label('count')
-    ).join(ServiceRequest, Service.id == ServiceRequest.service_id) \
-     .group_by(Service.id).all()
+    # Fetch service requests for the professional
+    service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
+    print(f"Service Requests found: {service_requests}")
+
+    assigned_requests = [sr for sr in service_requests if sr.service_status == 'Assigned']
+    closed_requests = [sr for sr in service_requests if sr.service_status == 'Closed']
+    cancelled_requests = [sr for sr in service_requests if sr.service_status == 'Cancelled']
+    requested_requests = [sr for sr in service_requests if sr.service_status == 'Requested']
 
     service_status_counts = {
-        'Requested': db.session.query(db.func.count(ServiceRequest.id)).filter(ServiceRequest.service_status == 'Requested').scalar(),
-        'Assigned': db.session.query(db.func.count(ServiceRequest.id)).filter(ServiceRequest.service_status == 'assigned').scalar(),
-        'Closed': db.session.query(db.func.count(ServiceRequest.id)).filter(ServiceRequest.service_status == 'Closed').scalar(),
-        'Cancelled': db.session.query(db.func.count(ServiceRequest.id)).filter(ServiceRequest.service_status == 'Cancelled').scalar()
+        'Assigned': len(assigned_requests),
+        'Closed': len(closed_requests),
+        'Cancelled': len(cancelled_requests),
+        'Requested': len(requested_requests)
     }
-
-    # Convert dict to list of tuples for easier chart rendering
-    service_status_data = [(status, count) for status, count in service_status_counts.items()]
-
+    print(ServiceRequest.query.first())
+    print(Review.query.first())
     return render_template(
-        'admin/summary.html',
-        avg_customer_ratings=avg_customer_ratings,
-        avg_professional_ratings=avg_professional_ratings,
-        services_booked=services_booked,
-        service_status=service_status_data
+        'professional/summary.html',
+        reviews=reviews,
+        avg_rating=avg_rating,
+        service_status_counts=service_status_counts
     )

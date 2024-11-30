@@ -59,8 +59,8 @@
                 <tr>
                     <td class="text-center">{{ request.id }}</td>
                     <td class="text-center">{{ request.service.name }}</td>
-                    <td class="text-center">{{ request.professional.user.username }}</td>
-                    <td class="text-center">{{ request.professional.user.phone_number }}</td>
+                    <td class="text-center">{{ request.professional.username }}</td>
+                    <td class="text-center">{{ request.professional.phone_number }}</td>
                     <td class="text-center">
                         {% if request.service_status == 'Requested' %}
                             <span class="badge badge-warning">{{ request.service_status }}</span>

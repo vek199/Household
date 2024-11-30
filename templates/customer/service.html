@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
-        <h1>Best {{ service.name }} Packages</h1>
+        <h1>Best {{ service.name }} Packages  only at ₹{{ service.price }}!</h1>
         <a href="{{ url_for('customer_profile') }}" class="btn btn-outline-secondary">
             <i class="fas fa-user"></i> Profile
         </a>
@@ -19,6 +19,7 @@
                 <th scope="col">Professional Name</th>
                 <th scope="col">Experience (Years)</th>
                 <th scope="col">Description</th>
+                <th scope="col">Average Rating</th>
                 <th scope="col">Action</th>
             </tr>
         </thead>
@@ -29,8 +30,9 @@
                     <td>{{ professional.user.username }}</td>
                     <td>{{ professional.experience }}</td>
                     <td>{{ professional.description or "No description available." }}</td>
+                    <td>{{ professional.average_rating or "N/A" }}</td>
                     <td>
-                        <form action="{{ url_for('book_service', professional_id=professional.id, service_id=service.id) }}" method="POST">
+                        <form action="{{ url_for('book_service', professional_id=professional.user_id, service_id=service.id) }}" method="POST">
                             <button type="submit" class="btn btn-primary btn-sm">Book Now</button>
                         </form>
                     </td>
@@ -64,8 +66,8 @@
                 <tr>
                     <td class="text-center">{{ request.id }}</td>
                     <td class="text-center">{{ request.service.name }}</td>
-                    <td class="text-center">{{ request.professional.user.username }}</td>
-                    <td class="text-center">{{ request.professional.user.phone_number }}</td>
+                    <td class="text-center">{{ request.professional.username }}</td>
+                    <td class="text-center">{{ request.professional.phone_number }}</td>
                     <td class="text-center">
                         {% if request.service_status == 'Requested' %}
                             <span class="badge badge-warning">{{ request.service_status }}</span>

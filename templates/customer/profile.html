@@ -6,56 +6,96 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-4 text-center">
-            <img id="profile-pic" src="" class="img-fluid rounded-circle mb-3" alt="Profile Picture" width="200" height="200">
-            <h3>{{ user.username }}</h3>
-        </div>
-        <div class="col-md-8">
-            <h4>Profile Details</h4>
-            <table class="table table-striped mt-3">
-                <tr>
-                    <th scope="row">Username</th>
-                    <td>{{ user.username }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Email</th>
-                    <td>{{ user.email }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Phone Number</th>
-                    <td>{{ user.phone_number }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Address</th>
-                    <td>{{ address }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Location Pin Code</th>
-                    <td>{{ location_pin_code }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Additional Info</th>
-                    <td>{{ additional_info }}</td>
-                </tr>
-            </table>
+    <div class="profile-card shadow-lg rounded p-4">
+        <div class="row align-items-center">
+            <!-- Profile Picture and User Info -->
+            <div class="col-md-4 text-center">
+                <div class="profile-pic-container mb-3">
+                    <img id="profile-pic" src="https://api.dicebear.com/9.x/lorelei/svg?seed={{ user.username }}" 
+                         class="profile-pic img-fluid rounded-circle shadow-sm" alt="Profile Picture">
+                </div>
+                <h2 class="text-primary fw-bold">{{ user.username }}</h2>
+                <!-- Button with direct link -->
+                <a href="{{ url_for('edit_customer_profile') }}" 
+                   class="btn btn-outline-primary mt-3 px-4 py-2 rounded-pill">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+            <!-- Profile Details -->
+            <div class="col-md-8">
+                <h3 class="fw-bold text-secondary mb-4">Profile Details</h3>
+                <div class="details-container">
+                    <div class="detail-item d-flex mb-3">
+                        <div class="detail-label fw-semibold text-muted me-3">Username:</div>
+                        <div class="detail-value">{{ user.username }}</div>
+                    </div>
+                    <div class="detail-item d-flex mb-3">
+                        <div class="detail-label fw-semibold text-muted me-3">Email:</div>
+                        <div class="detail-value">{{ user.email }}</div>
+                    </div>
+                    <div class="detail-item d-flex mb-3">
+                        <div class="detail-label fw-semibold text-muted me-3">Phone Number:</div>
+                        <div class="detail-value">{{ user.phone_number }}</div>
+                    </div>
+                    <div class="detail-item d-flex mb-3">
+                        <div class="detail-label fw-semibold text-muted me-3">Address:</div>
+                        <div class="detail-value">{{ user.customer_profile.address }}</div>
+                    </div>
+                    <div class="detail-item d-flex mb-3">
+                        <div class="detail-label fw-semibold text-muted me-3">Location Pin Code:</div>
+                        <div class="detail-value">{{ user.customer_profile.location_pin_code }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-    // Fetch the profile picture from the external API
-    fetch("https://api.generated.photos/api/v1/faces/random")
-        .then(response => response.json())
-        .then(data => {
-            // Assuming the API returns an image URL
-            document.getElementById("profile-pic").src = data.url || "https://via.placeholder.com/200";
-        })
-        .catch(error => {
-            console.error("Error fetching profile picture:", error);
-            document.getElementById("profile-pic").src = "https://via.placeholder.com/200";
-        });
-</script>
+{% block styles %}
+<style>
+    .profile-card {
+        background: linear-gradient(135deg, #f9f9f9, #ffffff);
+        border: 1px solid #e6e6e6;
+    }
+    .profile-pic-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+    .profile-pic {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+    .profile-pic:hover {
+        transform: scale(1.05);
+    }
+    .details-container {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    .detail-item {
+        border-bottom: 1px solid #e6e6e6;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    .btn-outline-primary {
+        border: 2px solid #007bff;
+        color: #007bff;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-outline-primary:hover {
+        background: #007bff;
+        color: #fff;
+    }
+</style>
 {% endblock %}

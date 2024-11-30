@@ -88,51 +88,38 @@
 </div>
 
 
-    <!-- Service Requests Table -->
-    <div class="table-section">
-        <h2 class="table-heading">Service Requests</h2>
-        <table class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Assigned Professional</th>
-                    <th>Requested Date</th>
-                    <th>Status</th>
-                    <th>Customer Rating</th>
-                    <th>Professional Rating</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in service_requests %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('service_request_details', service_request_id=request.id) }}">
-                            {{ request.id }}
-                        </a>
-                    </td>
-                    <td>{{ request.professional.user.username if request.professional else 'Not Assigned' }}</td>
-                    <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ request.service_status }}</td>
-                    <td>
-                        {% set professional_review = reviews | selectattr('reviewer_id', 'equalto', request.customer_id) 
-                                              | selectattr('reviewee_id', 'equalto', request.professional.user_id) 
-                                              | selectattr('service_request_id', 'equalto', request.id) 
-                                              | first %}
-                        {{ professional_review.rating if professional_review else 'N/A' }}
-                    </td>
-                    <td>
-                        {% set customer_review = reviews | selectattr('reviewer_id', 'equalto', request.professional.user_id) 
-                                          | selectattr('reviewee_id', 'equalto', request.customer_id) 
-                                          | selectattr('service_request_id', 'equalto', request.id) 
-                                          | first %}
-                        {{ customer_review.rating if customer_review else 'N/A' }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            
-        </table>
-    </div>
+<div class="table-section">
+    <h2 class="table-heading">Service Requests</h2>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Assigned Professional</th>
+                <th>Requested Date</th>
+                <th>Status</th>
+                <th>Customer Rating</th>
+                <th>Professional Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in service_requests %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('service_request_details', service_request_id=request['id']) }}">
+                        {{ request['id'] }}
+                    </a>
+                </td>
+                <td>{{ request['professional_username'] }}</td>
+                <td>{{ request['date_of_request'].strftime('%Y-%m-%d') }}</td>
+                <td>{{ request['service_status'] }}</td>
+                <td>{{ request['customer_rating'] }}</td>
+                <td>{{ request['professional_rating'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
 <!-- Customers Table -->
 <div class="table-section">
@@ -146,7 +133,6 @@
                 <th>Phone Number</th>
                 <th>Address</th>
                 <th>Location Pin Code</th>
-                <th>Average Rating</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -159,17 +145,7 @@
                 <td>{{ customer.user.phone_number }}</td>
                 <td>{{ customer.address }}</td>
                 <td>{{ customer.location_pin_code }}</td>
-                <td>
-                    {% set customer_reviews = reviews | selectattr('reviewee_id', 'equalto', customer.user_id) %}
-                    {% set total_rating = customer_reviews | map(attribute='rating') | sum %}
-                    {% set rating_count = customer_reviews | list | length %}
-
-                    {% if rating_count > 0 %}
-                        {{ (total_rating / rating_count) | round(2) }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
+                
                 <td>
                     <a href="{{ url_for('view_customer', customer_id=customer.id) }}" class="btn btn-info btn-sm">
                         <i class="fas fa-eye"></i> Details
@@ -206,30 +182,20 @@
                 <th>Service Type</th>
                 <th>Experience (Yrs)</th>
                 <th>Verified</th>
-                <th>Average Rating</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for professional in verified_professionals %}
             <tr>
-                <td>{{ professional.id }}</td>
+                <td>{{ professional.user.id }}</td>
                 <td>{{ professional.user.username }}</td>
                 <td>{{ professional.user.email }}</td>
                 <td>{{ professional.user.phone_number }}</td>
                 <td>{{ professional.service_type }}</td>
                 <td>{{ professional.experience }}</td>
                 <td>{{ 'Yes' if professional.verified else 'No' }}</td>
-                <td>
-                    {% set professional_reviews = reviews | selectattr('reviewee_id', 'equalto', professional.user_id) %}
-                    {% set total_rating = professional_reviews | map(attribute='rating') | sum %}
-                    {% set rating_count = professional_reviews | list | length %}
-                    {% if rating_count > 0 %}
-                        {{ (total_rating / rating_count) | round(2) }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
+                
                 <td>
                     <a href="{{ url_for('view_professional', professional_id=professional.id) }}" class="btn btn-info btn-sm">
                         <i class="fas fa-eye"></i> Details

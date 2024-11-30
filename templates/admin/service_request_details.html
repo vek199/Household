@@ -21,7 +21,7 @@
                     <h6 class="text-muted">Price:</h6>
                     <p class="lead font-weight-bold text-success">${{ service_request.service.price }}</p>
                     <h6 class="text-muted">Description:</h6>
-                    <p>{{ service_request.service.description }}</p>
+                    <p>{{ service_request.service.description or 'No description available' }}</p>
                 </div>
             </div>
         </div>
@@ -35,12 +35,11 @@
                 <div class="card-body">
                     <h6 class="text-muted">Username:</h6>
                     <p>{{ service_request.customer.username }}</p>
-                    <h6 class="text-muted">Contact Number:</h6>
-                    <p>{{ service_request.contact_number }}</p>
+                  
                     <h6 class="text-muted">Address:</h6>
-                    <p>{{ service_request.customer_location }}</p>
+                    <p>{{ service_request.customer_location or 'No address available' }}</p>
                     <h6 class="text-muted">Pin Code:</h6>
-                    <p>{{ service_request.customer_pin_code }}</p>
+                    <p>{{ service_request.customer_pin_code or 'Not provided' }}</p>
                 </div>
             </div>
         </div>
@@ -54,14 +53,8 @@
                 </div>
                 <div class="card-body">
                     <h6 class="text-muted">Username:</h6>
-                    <p>{{ service_request.professional.user.username }}</p>
-                    <h6 class="text-muted">Service Type:</h6>
-                    <p>{{ service_request.professional.service_type }}</p>
-                    <h6 class="text-muted">Experience:</h6>
-                    <p>{{ service_request.professional.experience }} years</p>
-                    <h6 class="text-muted">Description:</h6>
-                    <p>{{ service_request.professional.description }}</p>
-                </div>
+                    <p>{{ service_request.professional.username }}</p>
+                    </div>
             </div>
         </div>
         {% endif %}
@@ -106,16 +99,12 @@
                     {% set customer_review = service_request.reviews | selectattr('reviewer_id', 'equalto', service_request.professional.user_id) | first %}
                     <p><strong>Rating:</strong> {{ customer_review.rating if customer_review else 'N/A' }}</p>
                     <p><strong>Review:</strong> {{ customer_review.review if customer_review else 'No review submitted' }}</p>
-
                 </div>
             </div>
         </div>
-
     </div>
-
 </div>
 
-<!-- Include Font Awesome for Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 <style scoped>
@@ -153,6 +142,9 @@
     hr {
         border-top: 1px solid #e9ecef;
     }
-</style>
 
+    .badge-info {
+        background-color: #17a2b8;
+    }
+</style>
 {% endblock %}

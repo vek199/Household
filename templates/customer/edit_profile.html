@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+
+{% block heading %}
+<title>Edit Customer Profile</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <img id="profile-pic" src="https://api.dicebear.com/9.x/lorelei/svg?seed=user.username" class="img-fluid rounded-circle mb-3" alt="Profile Picture" width="200" height="200">
+            <h3>{{ user.username }}</h3>
+        </div>
+        <div class="col-md-8">
+            <h4>Edit Profile Details</h4>
+            <form action="{{ url_for('edit_customer_profile') }}" method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone_number" class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3">{{ user.customer_profile.address }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="location_pin_code" class="form-label">Location Pin Code</label>
+                    <input type="text" class="form-control" id="location_pin_code" name="location_pin_code" value="{{ user.customer_profile.location_pin_code }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Optionally, you can use JavaScript for further form validation or enhancements.
+</script>
+{% endblock %}

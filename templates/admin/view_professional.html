@@ -49,25 +49,21 @@
                 </div>
             </div>
 
-            <!-- Toggle Block Professional -->
-            <div class="toggle-section mt-5">
-                <div class="d-flex justify-content-center align-items-center mb-3">
-                    <label for="blockSwitch" class="form-label text-muted fs-5 fw-semibold">Block Professional</label>
-                </div>
-                <div class="d-flex justify-content-center">
-                    <input class="form-check-input form-check-input-lg" 
-                           type="checkbox" 
-                           id="blockSwitch" 
-                           data-userid="{{ professional.user.id }}" 
-                           {% if professional.blocked %}checked{% endif %} 
-                           data-bs-toggle="toggle" 
-                           data-on="Active" 
-                           data-off="Inactive" 
-                           data-onstyle="danger" 
-                           data-offstyle="secondary">
-                </div>
+            <div class="mt-5">
+                <h5 class="text-muted"><i class="fas fa-file-alt text-primary me-2"></i>Submitted Document</h5>
+                {% if professional.experience_proof %}
+                    <!-- Generate the URL for the file in the static/uploads folder -->
+                    <a href="{{ url_for('static', filename='uploads/' + professional.experience_proof) }}" 
+                       class="btn btn-outline-primary mt-3" 
+                       target="_blank">
+                        View Document
+                    </a>
+                {% else %}
+                    <p class="text-danger mt-3">No document submitted.</p>
+                {% endif %}
             </div>
-    
+
+            
             <!-- Back Button -->
             <div class="mt-5">
                 <a href="{{ url_for('admin') }}" class="btn btn-outline-dark rounded-pill px-5 py-2">

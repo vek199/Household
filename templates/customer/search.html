@@ -17,7 +17,7 @@
             <option value="location" {% if search_by == 'location' %}selected{% endif %}>Location</option>
         </select>
 
-        <input type="text" class="form-control mr-3 search-query" id="search_query" name="search_query" placeholder="Enter search term..." value="{{ search_query }}" required>
+        <input type="text" class="form-control mr-3 search-query" id="search_query" name="search_query" placeholder="Enter search term..." {% if search_query %}value="{{ search_query }}"{% endif %} required>
 
         <button type="submit" class="btn btn-primary">Search</button>
     </form>

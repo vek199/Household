@@ -1,165 +1,203 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Summary Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 0 20px;
+        }
+        .chart-container {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Admin Summary Dashboard</h2>
 
-{% block content %}
-<div class="container my-5">
-    <h2 class="text-center">Admin Dashboard</h2>
-    
-    <!-- Chart Grid -->
-    <div class="row">
-        <!-- Average Customer Ratings of Each Professional -->
-        <div class="col-md-6 mb-4">
-            <h4>Average Customer Ratings of Each Professional</h4>
-            <canvas id="avgCustomerRatingsChart"></canvas>
+    <div class="dashboard-container">
+        <div class="chart-container">
+            <h3>Average Customer Ratings for Professionals</h3>
+            <canvas id="customerRatingsChart"></canvas>
         </div>
-
-        <!-- Average Professional Ratings of Each Customer -->
-        <div class="col-md-6 mb-4">
-            <h4>Average Professional Ratings of Each Customer</h4>
-            <canvas id="avgProfessionalRatingsChart"></canvas>
+        <div class="chart-container">
+            <h3>Average Professional Ratings for Customers</h3>
+            <canvas id="professionalRatingsChart"></canvas>
         </div>
-
-        <!-- Number of Services Booked -->
-        <div class="col-md-6 mb-4">
-            <h4>Number of Services Booked</h4>
+        <div class="chart-container">
+            <h3>Services Booked</h3>
             <canvas id="servicesBookedChart"></canvas>
         </div>
-
-        <!-- Service Requests Status -->
-        <div class="col-md-6 mb-4">
-            <h4>Service Requests Status</h4>
+        <div class="chart-container">
+            <h3>Service Request Status</h3>
             <canvas id="serviceStatusChart"></canvas>
         </div>
     </div>
-</div>
 
-<!-- Load Chart.js and the Datalabels Plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        // Fetch admin summary data from the API
+        async function fetchAdminSummary() {
+            const response = await fetch('/api/admin/summary');
+            const data = await response.json();
 
-<script>
-    // Average Customer Ratings of Each Professional
-    const avgCustomerRatingsCtx = document.getElementById('avgCustomerRatingsChart').getContext('2d');
-    const avgCustomerRatingsData = {
-        labels: {{ avg_customer_ratings | map(attribute=2) | list | tojson }}, // assuming attribute 2 is the name
-        datasets: [{
-            label: 'Avg Ratings by Customers',
-            data: {{ avg_customer_ratings | map(attribute=1) | list | tojson }},
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    };
-    new Chart(avgCustomerRatingsCtx, {
-        type: 'bar',
-        data: avgCustomerRatingsData,
-        options: {
-            plugins: {
-                datalabels: {
-                    color: 'black',
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: (value) => value.toFixed(2) // Display values above bars
-                }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Professional Names' }},
-                y: { title: { display: true, text: 'Average Rating' }}
-            }
+            // Initialize charts with data
+            initializeCustomerRatingsChart(data.avg_customer_ratings);
+            initializeProfessionalRatingsChart(data.avg_professional_ratings);
+            initializeServicesBookedChart(data.services_booked);
+            initializeServiceStatusChart(data.service_status_counts);
         }
-    });
 
-    // Average Professional Ratings of Each Customer
-    const avgProfessionalRatingsCtx = document.getElementById('avgProfessionalRatingsChart').getContext('2d');
-    const avgProfessionalRatingsData = {
-        labels: {{ avg_professional_ratings | map(attribute=2) | select("defined") | list | tojson }},
-        datasets: [{
-            label: 'Avg Ratings by Professionals',
-            data: {{ avg_professional_ratings | map(attribute=1) | list | tojson }},
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        }]
-    };
-    new Chart(avgProfessionalRatingsCtx, {
-        type: 'bar',
-        data: avgProfessionalRatingsData,
-        options: {
-            plugins: {
-                datalabels: {
-                    color: 'black',
-                    anchor: 'end',
-                    align: 'top',
-                    formatter: (value) => value.toFixed(2)
+        // Average Customer Ratings for Professionals Chart
+        function initializeCustomerRatingsChart(data) {
+            const labels = data.map(item => `Professional ${item.professional_id}`);
+            const ratings = data.map(item => item.avg_rating);
+
+            new Chart(document.getElementById('customerRatingsChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: ratings,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
                 }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Customer Names' }},
-                y: { title: { display: true, text: 'Average Rating' }}
-            }
+            });
         }
-    });
 
-    // Number of Services Booked with unique colors
-    const servicesBookedCtx = document.getElementById('servicesBookedChart').getContext('2d');
-    const servicesBookedLabels = {{ services_booked | map(attribute=0) | list | tojson }};
-    const servicesBookedData = {{ services_booked | map(attribute=1) | list | tojson }};
-    const servicesBookedColors = servicesBookedLabels.map((_, i) => `hsl(${(i * 30) % 360}, 70%, 50%)`);
+        // Average Professional Ratings for Customers Chart
+        function initializeProfessionalRatingsChart(data) {
+            const labels = data.map(item => `Customer ${item.customer_id}`);
+            const ratings = data.map(item => item.avg_rating);
 
-    new Chart(servicesBookedCtx, {
-        type: 'pie',
-        data: {
-            labels: servicesBookedLabels,
-            datasets: [{
-                label: 'Services Booked',
-                data: servicesBookedData,
-                backgroundColor: servicesBookedColors,
-                borderColor: servicesBookedColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                datalabels: {
-                    color: 'black',
-                    formatter: (value, context) => `${context.chart.data.labels[context.dataIndex]}: ${value}`
+            new Chart(document.getElementById('professionalRatingsChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: ratings,
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
                 }
-            }
+            });
         }
-    });
 
-    // Service Requests Status
-    const serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
-    const serviceStatusData = {
-        labels: {{ service_status | map(attribute=0) | list | tojson }},
-        datasets: [{
-            label: 'Service Request Status',
-            data: {{ service_status | map(attribute=1) | list | tojson }},
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)'
-            ],
-            borderWidth: 1
-        }]
-    };
-    new Chart(serviceStatusCtx, {
-        type: 'doughnut',
-        data: serviceStatusData,
-        options: {
-            plugins: {
-                datalabels: {
-                    color: 'black',
-                    formatter: (value, context) => `${context.chart.data.labels[context.dataIndex]}: ${value}`
+        // Services Booked Chart
+        function initializeServicesBookedChart(data) {
+            const labels = data.map(item => item.service_name);
+            const counts = data.map(item => item.count);
+
+            new Chart(document.getElementById('servicesBookedChart'), {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
                 }
-            }
+            });
         }
-    });
-</script>
-{% endblock %}
+
+        // Service Request Status Chart
+        function initializeServiceStatusChart(data) {
+            const labels = data.map(item => item.status);
+            const counts = data.map(item => item.count);
+
+            new Chart(document.getElementById('serviceStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Fetch and display data on page load
+        fetchAdminSummary();
+    </script>
+</body>
+</html>
