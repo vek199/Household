@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient-primary text-white text-center py-4">
+                    <h3 class="mb-0">Secure Payment</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-4">Choose your preferred payment method and scan the QR code to complete your payment:</p>
+                    
+                    <!-- Payment QR Code -->
+                    <div class="text-center mb-4">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=example@upi&pn=Household%20Services&am=500.00" 
+                             alt="QR Code" 
+                             class="img-fluid border border-dark rounded">
+                        <p class="text-muted mt-2">* Scan the QR code using any UPI app to pay ₹500.00</p>
+                    </div>
+                    
+                    <!-- Payment Methods -->
+                    <div class="text-center mb-4">
+                        <h5 class="text-muted">Supported Payment Options</h5>
+                        <div class="d-flex justify-content-center flex-wrap">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/Paytm_logo.png" 
+                                 alt="Paytm" class="payment-logo mx-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/Google_Pay_logo.svg" 
+                                 alt="Google Pay" class="payment-logo mx-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/PhonePe_Logo.png" 
+                                 alt="PhonePe" class="payment-logo mx-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/BHIM_UPI_Logo.png" 
+                                 alt="BHIM" class="payment-logo mx-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Visa_Logo.png" 
+                                 alt="Visa" class="payment-logo mx-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_Logo.png" 
+                                 alt="MasterCard" class="payment-logo mx-2">
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Form -->
+                    <form id="paymentForm" class="text-center">
+                        <div class="mb-3">
+                            <label for="paymentAmount" class="form-label fw-bold">Amount</label>
+                            <input type="text" class="form-control text-center" id="paymentAmount" value="₹500.00" readonly>
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg w-100" id="payButton">
+                            <i class="fas fa-credit-card"></i> Proceed to Pay
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thank You Modal -->
+<div class="modal fade" id="thankYouModal" tabindex="-1" aria-labelledby="thankYouModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-success" id="thankYouModalLabel"><i class="fas fa-check-circle"></i> Payment Successful!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p>Thank you for your payment!</p>
+                <p class="text-muted">You will be redirected shortly...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show Thank You Modal on Pay Button Click
+    document.getElementById('payButton').addEventListener('click', function () {
+        const thankYouModal = new bootstrap.Modal(document.getElementById('thankYouModal'));
+        thankYouModal.show();
+        setTimeout(() => {
+            window.location.href = "{{ url_for('index') }}";
+        }, 2000); // Redirect after 2 seconds
+    });
+
+    // Auto-redirect after 20 seconds
+    setTimeout(() => {
+        alert("Session expired. Redirecting to homepage.");
+        window.location.href = "{{ url_for('index') }}";
+    }, 20000); // 20 seconds timer
+</script>
+{% endblock %}
+
+{% block style %}
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(90deg, #007bff, #0056b3);
+    }
+    .payment-logo {
+        width: 60px;
+        height: auto;
+        margin: 5px;
+    }
+    #paymentAmount {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+    .btn-success {
+        font-size: 1.1rem;
+        padding: 10px 20px;
+    }
+</style>
+{% endblock %}

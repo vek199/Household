@@ -1121,3 +1121,11 @@ def professional_summary():
         avg_rating=avg_rating,
         service_status_counts=service_status_counts
     )
+
+@app.route('/payment')
+def payment():
+    return render_template('payments.html')
+
+@app.route('/make_payment', methods=['POST'])
+def make_payment():
+    return redirect(url_for('index'))
