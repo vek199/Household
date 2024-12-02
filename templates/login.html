@@ -14,17 +14,17 @@
 <section class="minimal-background overflow-hidden">
     <style>
         .minimal-background {
-            background-color: #f5f5f5; /* Light gray background for a minimal look */
+            background-color: #f5f5f5;
         }
 
         .bg-glass {
-            background-color: #ffffff; /* Simple white background for cards */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-            border-radius: 8px; /* Smooth rounded corners */
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         h1 {
-            color: #333; /* Darker text color for better contrast */
+            color: #333;
         }
 
         .card-body {
@@ -32,19 +32,18 @@
         }
 
         .form-label {
-            color: #555; /* Muted color for labels */
+            color: #555;
         }
 
         .btn-primary {
-            background-color: #007bff; /* Primary color for buttons */
+            background-color: #007bff;
             border: none;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3; /* Darker shade on hover */
+            background-color: #0056b3;
         }
 
-        /* Remove the circles and radial gradients */
         #radius-shape-1, #radius-shape-2 {
             display: none;
         }
@@ -58,21 +57,43 @@
                     <span style="color: #555;">at your Service</span>
                 </h1>
                 <p class="mb-4" style="color: #777;">
-Welcome to my MADI project Demo. Have a great time.                </p>
+                    Welcome to my MADI project Demo. Have a great time.
+                </p>
             </div>
 
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="card bg-glass">
                     <div class="card-body">
-                        <form action="{{ url_for('login_post') }}" method="post">
+                        <form action="{{ url_for('login_post') }}" method="post" novalidate>
                             <div class="form-outline mb-4">
-                                <input type="text" id="form3Example3" class="form-control" name="username" required />
+                                <input 
+                                    type="text" 
+                                    id="form3Example3" 
+                                    class="form-control" 
+                                    name="username" 
+                                    required 
+                                    minlength="3"
+                                    pattern="[a-zA-Z0-9]+" 
+                                    title="Username should only contain letters and numbers, and be at least 3 characters long." />
                                 <label class="form-label" for="form3Example3">Username</label>
+                                <div class="invalid-feedback">
+                                    Please enter a valid username (only letters and numbers, at least 4 characters).
+                                </div>
                             </div>
 
                             <div class="form-outline mb-4">
-                                <input type="password" id="form3Example4" class="form-control" name="password" required />
+                                <input 
+                                    type="password" 
+                                    id="form3Example4" 
+                                    class="form-control" 
+                                    name="password" 
+                                    required 
+                                    minlength="3" 
+                                    title="Password must be at least 3 characters long." />
                                 <label class="form-label" for="form3Example4">Password</label>
+                                <div class="invalid-feedback">
+                                    Please enter a valid password (at least 6 characters).
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-block mb-4">Login</button>
@@ -92,3 +113,22 @@ Welcome to my MADI project Demo. Have a great time.                </p>
 
 {% include 'footer.html' %}
 {% endblock %}
+
+<script>
+    // Enable Bootstrap validation styles for the form
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('form');
+
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>

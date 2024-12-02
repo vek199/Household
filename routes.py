@@ -226,6 +226,10 @@ def blocked():
 def logout():
     session.pop('user_id')
     return redirect(url_for('login'))
+from flask import render_template, request, redirect, url_for, flash
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash
+from models import db, User, CustomerProfile  # Adjust based on your app structure
 
 @app.route('/register/customer', methods=['GET', 'POST'])
 def register_customer():
@@ -244,22 +248,43 @@ def register_customer():
             flash('Passwords do not match!', 'danger')
             return redirect(url_for('register_customer'))
 
-        # Create User
-        new_user = User(username=username, phone_number=phone_number, email=email, role='customer')
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
+        # Check for duplicate email
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email is already registered!', 'danger')
+            return redirect(url_for('register_customer'))
 
-        # Create Customer Profile
-        customer_profile = CustomerProfile(user_id=new_user.id, address=address, 
-                                           location_pin_code=location_pin_code, 
-                                           preferred_services=preferred_services)
-        db.session.add(customer_profile)
-        db.session.commit()
+        try:
+            # Create User
+            new_user = User(
+                username=username,
+                phone_number=phone_number,
+                email=email,
+                role='customer',
+                is_active=True
+            )
+            new_user.set_password(password)  # Assuming this sets the hashed password
+            db.session.add(new_user)
+            db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
-    
+            # Create Customer Profile
+            customer_profile = CustomerProfile(
+                user_id=new_user.id,
+                address=address,
+                location_pin_code=location_pin_code,
+                preferred_services=preferred_services
+            )
+            db.session.add(customer_profile)
+            db.session.commit()
+
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+
+        except IntegrityError:
+            db.session.rollback()  # Rollback to maintain database consistency
+            flash('An error occurred during registration. Please try again.', 'danger')
+            return redirect(url_for('register_customer'))
+
     return render_template('customer/register.html')
 
 
